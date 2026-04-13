@@ -1,12 +1,12 @@
 import { describe, expect, test } from 'bun:test'
 
+import { generatedCatalog } from '../src/catalog'
 import { createJsonSchemaFileEntries, stringifyJsonSchema } from '../src/internal/json-schema-files'
-import { textModelConfigJsonSchemasByProvider } from '../src/schema'
 
 describe('JSON schema file emission', () => {
   test('includes the root schema and one schema per provider', () => {
     const entries = createJsonSchemaFileEntries()
-    const providerIds = Object.keys(textModelConfigJsonSchemasByProvider).sort()
+    const providerIds = Object.keys(generatedCatalog.providers).sort()
 
     expect(entries[0]?.path).toBe('text-model-config.schema.json')
     expect(entries).toHaveLength(providerIds.length + 1)

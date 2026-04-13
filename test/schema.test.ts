@@ -22,6 +22,17 @@ function getFirstProviderEntry() {
   }
 }
 
+function getFirstProviderWithoutModels() {
+  const [providerId, provider] = Object.entries(generatedCatalog.providers).find(
+    ([, provider]) => Object.keys(provider.models).length === 0,
+  )!
+
+  return {
+    providerId,
+    provider,
+  }
+}
+
 describe('schemas', () => {
   test('parses a valid provider/model pair', () => {
     const { providerId, modelId } = getFirstProviderEntry()
@@ -37,50 +48,64 @@ describe('schemas', () => {
     })
   })
 
-  test('rejects an invalid provider/model pair', () => {
-    const providerEntries = Object.entries(generatedCatalog.providers).filter(
-      ([, provider]) => Object.keys(provider.models).length > 0,
-    )
-    const [leftProviderId, leftProvider] = providerEntries[0]!
-    const [rightProviderId, rightProvider] = providerEntries.find(
-      ([providerId]) => providerId !== leftProviderId,
-    )!
-    const invalidModelId =
-      Object.keys(rightProvider.models).find((modelId) => !(modelId in leftProvider.models)) ??
-      '__definitely-invalid__'
+  test('accepts unknown model ids for known providers', () => {
+    const { providerId } = getFirstProviderEntry()
+    const config = {
+      provider: providerId,
+      model: 'brand-new-model-id',
+    }
 
-    expect(() =>
-      textModelConfigSchema.parse({
-        provider: leftProviderId,
-        model: invalidModelId,
-      }),
-    ).toThrow()
+    expect(textModelConfigSchema.parse(config)).toEqual(config)
 
-    expect(() =>
-      textModelConfigSchemasByProvider[leftProvider.id]!.parse({
-        provider: leftProviderId,
-        model: invalidModelId,
-      }),
-    ).toThrow()
-
-    expect(
-      textModelConfigSchemasByProvider[rightProvider.id]!.parse({
-        provider: rightProviderId,
-        model: invalidModelId,
-      }),
-    ).toEqual({
-      provider: rightProviderId,
-      model: invalidModelId,
-    })
+    expect(textModelConfigSchemasByProvider[providerId]!.parse(config)).toEqual(config)
   })
 
-  test('emits JSON Schema with model titles and descriptions', () => {
+  test('rejects an unknown provider', () => {
+    expect(() =>
+      textModelConfigSchema.parse({
+        provider: '__definitely-invalid__',
+        model: 'anything',
+      }),
+    ).toThrow()
+  })
+
+  test('accepts providers that currently have no bundled model examples', () => {
+    const { providerId } = getFirstProviderWithoutModels()
+    const providerSchema = textModelConfigJsonSchemasByProvider[providerId]
+    const modelSchema = (providerSchema.properties as Record<string, unknown>).model as Record<
+      string,
+      unknown
+    >
+
+    expect(
+      textModelConfigSchemasByProvider[providerId]!.parse({
+        provider: providerId,
+        model: 'future-model-id',
+      }),
+    ).toEqual({
+      provider: providerId,
+      model: 'future-model-id',
+    })
+    expect(modelSchema.type).toBe('string')
+    expect(modelSchema.examples).toBeUndefined()
+  })
+
+  test('emits JSON Schema with model examples and no markdownDescription', () => {
     const { providerId, modelId, model } = getFirstProviderEntry()
     const providerSchema = textModelConfigJsonSchemasByProvider[providerId]
     const serialized = JSON.stringify(providerSchema)
+    const modelSchema = (providerSchema.properties as Record<string, unknown>).model as Record<
+      string,
+      unknown
+    >
 
     expect(serialized).toContain(modelId)
-    expect(serialized).toContain(model.name)
+    expect((modelSchema.examples as unknown[] | undefined)?.includes(modelId)).toBe(true)
+    expect(modelSchema.type).toBe('string')
+    expect(modelSchema.anyOf).toBeUndefined()
+    expect(modelSchema.title).toBeUndefined()
+    expect(modelSchema.description).toBeUndefined()
+    expect(serialized).not.toContain('"markdownDescription"')
     expect(JSON.stringify(textModelConfigJsonSchema)).toContain(providerId)
   })
 })

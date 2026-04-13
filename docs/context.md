@@ -29,7 +29,7 @@ It generates and commits a reduced catalog of text-capable models, derives Zod 4
 - `generatedCatalog`
   - The committed data snapshot produced by `pnpm generate`.
 - `textModelConfigSchema`
-  - The top-level Zod schema for validating catalog-known model selection.
+  - The top-level Zod schema for validating known providers and string model ids.
 - `textModelConfigJsonSchema`
   - JSON Schema generated from the Zod schema for editor or tool integration.
 - `TextModelDescriptor`
@@ -40,10 +40,11 @@ It generates and commits a reduced catalog of text-capable models, derives Zod 4
 ## Data Flow / Lifecycle
 
 1. `pnpm generate` scrapes `models.dev/providers/**`, parses TOML, filters to models whose output modalities include `text`, applies the repo's default `--since 2025-10-01` cutoff to the catalog model list, and writes the committed generated catalog.
-2. For editor and file validation, `textModelConfigSchema` or one of the provider-scoped schemas validates a `{ provider, model }` object against the catalog-known model ids.
-3. At runtime, `resolveTextModel` only requires `provider` and `model` to be strings. Unknown model ids fall back to provider defaults so newer or older model ids can still be used.
-4. `resolveTextModelLoadPlan` expands catalog templates such as `${ENV_VAR}`, merges runtime `packageOptions`, and resolves the exact module specifiers relative to `installationRoot`.
-5. `loadTextModel` imports the resolved modules and executes the planned binding operations to construct the final model instance.
+2. For editor and file validation, `textModelConfigSchema` or one of the provider-scoped schemas validates a `{ provider, model }` object where `provider` is catalog-known and `model` is any string.
+3. The generated JSON Schema uses the `examples` keyword to surface catalog-known model ids for autocomplete without rejecting unlisted ids.
+4. At runtime, `resolveTextModel` only requires `provider` and `model` to be strings. Unknown model ids fall back to provider defaults so newer or older model ids can still be used.
+5. `resolveTextModelLoadPlan` expands catalog templates such as `${ENV_VAR}`, merges runtime `packageOptions`, and resolves the exact module specifiers relative to `installationRoot`.
+6. `loadTextModel` imports the resolved modules and executes the planned binding operations to construct the final model instance.
 
 ## Common Tasks
 
@@ -68,7 +69,8 @@ It generates and commits a reduced catalog of text-capable models, derives Zod 4
 ## Recommended Patterns
 
 - Validate config at the boundary where JSON enters the system, then persist the parsed `{ provider, model }`.
-- Use the shipped JSON Schema files for autocomplete and catalog-guided validation, but let runtime loading accept model ids that are newer or older than the bundled catalog.
+- Use the shipped JSON Schema files for provider validation and model autocomplete, but let runtime loading accept model ids that are newer or older than the bundled catalog.
+  The model-id suggestions come from JSON Schema `examples`, not from a closed enum.
 - Treat `installationRoot` as the host application's dependency root, not the library's source directory.
 - Use `resolveTextModelLoadPlan` when the host wants to audit, install, or manually import provider packages before execution.
 - Keep secrets and provider-factory settings in environment variables or `packageOptions`, not in `TextModelConfig`.

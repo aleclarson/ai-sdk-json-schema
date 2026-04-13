@@ -1,44 +1,14 @@
 import { z } from 'zod'
 
 import { generatedCatalog } from './generated/catalog'
-import type { GeneratedTextModel, GeneratedTextProvider } from './internal/catalog-types'
+import type { GeneratedTextProvider } from './internal/catalog-types'
 import type { JsonSchemaObject, TextModelConfig } from './types'
 
-function createModelDescription(
-  provider: GeneratedTextProvider,
-  model: GeneratedTextModel,
-): string {
-  const features = [
-    model.reasoning ? 'reasoning' : null,
-    model.toolCall ? 'tool calling' : null,
-    model.structuredOutput ? 'structured output' : null,
-    model.temperature ? 'temperature' : null,
-  ].filter(Boolean)
+function createModelSchema(provider: GeneratedTextProvider) {
+  const modelIds = Object.keys(provider.models)
 
-  const parts = [
-    `${provider.name} / ${model.name}`,
-    `ID: ${provider.id}/${model.id}`,
-    `Package: ${model.packageName}`,
-  ]
-
-  if (features.length > 0) {
-    parts.push(`Features: ${features.join(', ')}`)
-  }
-
-  if (model.knowledge) {
-    parts.push(`Knowledge cutoff: ${model.knowledge}`)
-  }
-
-  return parts.join(' | ')
-}
-
-function createModelSchema(provider: GeneratedTextProvider, model: GeneratedTextModel) {
-  const description = createModelDescription(provider, model)
-
-  return z.literal(model.id).describe(description).meta({
-    title: model.name,
-    description,
-    markdownDescription: description,
+  return z.string().meta({
+    examples: modelIds.length > 0 ? modelIds : undefined,
   })
 }
 
@@ -55,27 +25,22 @@ function unionSchemas(schemas: z.ZodTypeAny[]): z.ZodTypeAny {
 }
 
 function createProviderSchema(provider: GeneratedTextProvider) {
-  const modelSchemas = Object.values(provider.models).map((model) =>
-    createModelSchema(provider, model),
-  )
-  const modelSchema = unionSchemas(modelSchemas)
-
   return z
     .object({
       provider: z.literal(provider.id),
-      model: modelSchema,
+      model: createModelSchema(provider),
     })
     .meta({
       title: provider.name,
       description: provider.doc,
-      markdownDescription: provider.doc,
     })
 }
 
 const providerSchemas = Object.fromEntries(
-  Object.values(generatedCatalog.providers)
-    .filter((provider) => Object.keys(provider.models).length > 0)
-    .map((provider) => [provider.id, createProviderSchema(provider)]),
+  Object.values(generatedCatalog.providers).map((provider) => [
+    provider.id,
+    createProviderSchema(provider),
+  ]),
 )
 
 const providerSchemaValues = Object.values(providerSchemas)

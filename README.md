@@ -4,7 +4,7 @@
 
 `ai-sdk-json-schema` turns the `models.dev` provider catalog into committed generated data, Zod-first JSON config schemas, and runtime helpers for resolving or loading text models from installed provider packages.
 
-The shipped JSON Schema files stay catalog-strict for autocomplete, while the runtime helpers accept any string model id for known providers.
+The shipped JSON Schema files enumerate known providers and use model-id `examples` for autocomplete, while still allowing any string model id for known providers.
 
 ## Installation
 
