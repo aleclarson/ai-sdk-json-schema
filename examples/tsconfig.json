@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.json",
+  "include": ["./"],
+  "compilerOptions": {
+    "baseUrl": "..",
+    "ignoreDeprecations": "6.0",
+    "paths": {
+      "ai-sdk-json-schema": ["./src/index.ts"]
+    },
+    "types": ["node"]
+  }
+}

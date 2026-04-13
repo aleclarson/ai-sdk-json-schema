@@ -1,0 +1,6 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": [".agents/**", "src/generated/**", "__snapshots__/tsnapi/**"],
+  "semi": false,
+  "singleQuote": true
+}
