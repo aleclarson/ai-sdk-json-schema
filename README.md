@@ -4,6 +4,8 @@
 
 `ai-sdk-json-schema` turns the `models.dev` provider catalog into committed generated data, Zod-first JSON config schemas, and runtime helpers for resolving or loading text models from installed provider packages.
 
+The shipped JSON Schema files stay catalog-strict for autocomplete, while the runtime helpers accept any string model id for known providers.
+
 ## Installation
 
 ```sh
@@ -15,7 +17,9 @@ pnpm add ai-sdk-json-schema
 ```ts
 import { generatedCatalog, resolveTextModel, textModelConfigSchema } from 'ai-sdk-json-schema'
 
-const [providerId, provider] = Object.entries(generatedCatalog.providers)[0]!
+const [providerId, provider] = Object.entries(generatedCatalog.providers).find(
+  ([, provider]) => Object.keys(provider.models).length > 0,
+)!
 const [modelId] = Object.keys(provider.models)
 
 const config = textModelConfigSchema.parse({

@@ -19,22 +19,26 @@ export interface TextModelConfig {
  * Resolved metadata for a validated text-model selection.
  *
  * Returned by {@link resolveTextModel} and embedded in {@link TextModelLoadPlan}.
+ *
+ * When `catalogMatch` is `false`, the model id was not present in the generated
+ * catalog and provider defaults were used for runtime resolution.
  */
 export interface TextModelDescriptor extends TextModelConfig {
   providerName: string
   providerDoc: string
   env: readonly string[]
+  catalogMatch: boolean
   name: string
   family?: string
-  attachment: boolean
-  reasoning: boolean
-  toolCall: boolean
+  attachment?: boolean
+  reasoning?: boolean
+  toolCall?: boolean
   structuredOutput?: boolean
   temperature?: boolean
   knowledge?: string
-  releaseDate: string
-  lastUpdated: string
-  modalities: {
+  releaseDate?: string
+  lastUpdated?: string
+  modalities?: {
     input: readonly string[]
     output: readonly string[]
   }

@@ -252,7 +252,50 @@ describe('createGeneratedCatalogFromProvidersDir', () => {
         expect(catalog.providers.alpha?.models.updated).toBeDefined()
         expect(catalog.providers.alpha?.models.released).toBeDefined()
         expect(catalog.providers.alpha?.models['old-unsupported']).toBeUndefined()
+        expect(catalog.providers.alpha?.packageName).toBe('@ai-sdk/openai-compatible')
         expect(catalog.packageNames).toEqual(['@ai-sdk/openai-compatible'])
+      },
+    )
+  })
+
+  test('keeps providers even when all catalog models are filtered out', async () => {
+    await withTempProvidersDir(
+      {
+        'old-only/provider.toml': [
+          'name = "Old Only"',
+          'npm = "@ai-sdk/openai-compatible"',
+          'env = ["OLD_ONLY_API_KEY"]',
+          'doc = "https://old-only.example/docs"',
+          'api = "https://old-only.example/v1"',
+        ].join('\n'),
+        'old-only/models/legacy.toml': [
+          'name = "Legacy"',
+          'attachment = false',
+          'reasoning = false',
+          'tool_call = true',
+          'temperature = true',
+          'release_date = "2025-09-01"',
+          'last_updated = "2025-09-15"',
+          '',
+          '[modalities]',
+          'input = ["text"]',
+          'output = ["text"]',
+        ].join('\n'),
+      },
+      (providersDir) => {
+        const catalog = createGeneratedCatalogFromProvidersDir({
+          providersDir,
+          generatedAt: '2026-01-01T00:00:00.000Z',
+          ref: 'fixture',
+          since: '2025-10-01',
+          parseToml(source) {
+            return Bun.TOML.parse(source)
+          },
+        })
+
+        expect(catalog.providers['old-only']).toBeDefined()
+        expect(catalog.providers['old-only']?.models).toEqual({})
+        expect(catalog.providers['old-only']?.packageName).toBe('@ai-sdk/openai-compatible')
       },
     )
   })

@@ -9,7 +9,9 @@ import {
 } from '../src/schema'
 
 function getFirstProviderEntry() {
-  const [providerId, provider] = Object.entries(generatedCatalog.providers)[0]!
+  const [providerId, provider] = Object.entries(generatedCatalog.providers).find(
+    ([, provider]) => Object.keys(provider.models).length > 0,
+  )!
   const [modelId, model] = Object.entries(provider.models)[0]!
 
   return {
@@ -36,7 +38,9 @@ describe('schemas', () => {
   })
 
   test('rejects an invalid provider/model pair', () => {
-    const providerEntries = Object.entries(generatedCatalog.providers)
+    const providerEntries = Object.entries(generatedCatalog.providers).filter(
+      ([, provider]) => Object.keys(provider.models).length > 0,
+    )
     const [leftProviderId, leftProvider] = providerEntries[0]!
     const [rightProviderId, rightProvider] = providerEntries.find(
       ([providerId]) => providerId !== leftProviderId,

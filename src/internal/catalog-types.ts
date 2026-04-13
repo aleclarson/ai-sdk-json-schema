@@ -26,6 +26,9 @@ export interface GeneratedTextProvider {
   name: string
   doc: string
   env: readonly string[]
+  packageName: string
+  api?: string
+  shape?: ModelShape
   models: Record<string, GeneratedTextModel>
 }
 

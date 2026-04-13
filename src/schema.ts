@@ -73,10 +73,9 @@ function createProviderSchema(provider: GeneratedTextProvider) {
 }
 
 const providerSchemas = Object.fromEntries(
-  Object.values(generatedCatalog.providers).map((provider) => [
-    provider.id,
-    createProviderSchema(provider),
-  ]),
+  Object.values(generatedCatalog.providers)
+    .filter((provider) => Object.keys(provider.models).length > 0)
+    .map((provider) => [provider.id, createProviderSchema(provider)]),
 )
 
 const providerSchemaValues = Object.values(providerSchemas)

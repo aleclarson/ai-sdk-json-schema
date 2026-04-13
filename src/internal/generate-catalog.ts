@@ -23,6 +23,7 @@ interface RawProviderToml {
   env?: unknown
   npm?: unknown
   api?: unknown
+  shape?: unknown
 }
 
 interface RawModelProviderOverride {
@@ -147,6 +148,7 @@ function validateModelAdapter(provider: GeneratedTextProvider, model: GeneratedT
       providerName: provider.name,
       providerDoc: provider.doc,
       env: provider.env,
+      catalogMatch: true,
       model: model.id,
       name: model.name,
       family: model.family,
@@ -283,9 +285,14 @@ export function createGeneratedCatalogFromProvidersDir(
       name: assertString(rawProvider.name, `${providerId}.provider.name`),
       doc: assertString(rawProvider.doc, `${providerId}.provider.doc`),
       env: assertStringArray(rawProvider.env, `${providerId}.provider.env`),
+      packageName: defaultPackageName,
+      api: getOptionalString(rawProvider.api),
+      shape: getOptionalShape(rawProvider.shape),
       models: {},
     }
-    const defaultApi = getOptionalString(rawProvider.api)
+    const defaultApi = provider.api
+
+    packageNames.add(provider.packageName)
 
     for (const relativePath of listModelTomlFiles(modelsDir)) {
       const modelId = normalizeModelId(relativePath)
@@ -317,9 +324,7 @@ export function createGeneratedCatalogFromProvidersDir(
       packageNames.add(model.packageName)
     }
 
-    if (Object.keys(provider.models).length > 0) {
-      providers[providerId] = provider
-    }
+    providers[providerId] = provider
   }
 
   return {

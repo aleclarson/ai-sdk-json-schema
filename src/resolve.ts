@@ -2,7 +2,7 @@ import process from 'node:process'
 
 import { z } from 'zod'
 
-import { UnknownModelError, UnknownProviderError, InvalidProviderModuleError } from './errors'
+import { UnknownProviderError, InvalidProviderModuleError } from './errors'
 import { generatedCatalog } from './generated/catalog'
 import { buildUnresolvedTextModelLoadPlan } from './runtime/adapters'
 import {
@@ -31,17 +31,28 @@ function createDescriptor(config: TextModelConfig): TextModelDescriptor {
   }
 
   const model = provider.models[config.model]
-
-  if (!model) {
-    throw new UnknownModelError(config.provider, config.model)
-  }
-
-  return {
+  const baseDescriptor = {
     provider: provider.id,
     providerName: provider.name,
     providerDoc: provider.doc,
     env: provider.env,
-    model: model.id,
+    model: config.model,
+  }
+
+  if (!model) {
+    return {
+      ...baseDescriptor,
+      catalogMatch: false,
+      name: config.model,
+      packageName: provider.packageName,
+      api: provider.api,
+      shape: provider.shape,
+    }
+  }
+
+  return {
+    ...baseDescriptor,
+    catalogMatch: true,
     name: model.name,
     family: model.family,
     attachment: model.attachment,
@@ -80,6 +91,7 @@ function getCallable(
  * metadata for that selection.
  *
  * This performs no filesystem resolution and does not import provider packages.
+ * Unknown model ids are allowed and fall back to provider defaults.
  */
 export function resolveTextModel(config: unknown): TextModelDescriptor {
   const parsedConfig = textModelConfigInputSchema.parse(config)

@@ -29,7 +29,7 @@ It generates and commits a reduced catalog of text-capable models, derives Zod 4
 - `generatedCatalog`
   - The committed data snapshot produced by `pnpm generate`.
 - `textModelConfigSchema`
-  - The top-level Zod schema for validating model selection.
+  - The top-level Zod schema for validating catalog-known model selection.
 - `textModelConfigJsonSchema`
   - JSON Schema generated from the Zod schema for editor or tool integration.
 - `TextModelDescriptor`
@@ -39,9 +39,9 @@ It generates and commits a reduced catalog of text-capable models, derives Zod 4
 
 ## Data Flow / Lifecycle
 
-1. `pnpm generate` scrapes `models.dev/providers/**`, parses TOML, filters to models whose output modalities include `text`, applies the repo's default `--since 2025-10-01` cutoff, and writes the committed generated catalog.
-2. At runtime, `textModelConfigSchema` or one of the provider-scoped schemas validates a `{ provider, model }` object.
-3. `resolveTextModel` turns that validated config into a `TextModelDescriptor` without resolving modules.
+1. `pnpm generate` scrapes `models.dev/providers/**`, parses TOML, filters to models whose output modalities include `text`, applies the repo's default `--since 2025-10-01` cutoff to the catalog model list, and writes the committed generated catalog.
+2. For editor and file validation, `textModelConfigSchema` or one of the provider-scoped schemas validates a `{ provider, model }` object against the catalog-known model ids.
+3. At runtime, `resolveTextModel` only requires `provider` and `model` to be strings. Unknown model ids fall back to provider defaults so newer or older model ids can still be used.
 4. `resolveTextModelLoadPlan` expands catalog templates such as `${ENV_VAR}`, merges runtime `packageOptions`, and resolves the exact module specifiers relative to `installationRoot`.
 5. `loadTextModel` imports the resolved modules and executes the planned binding operations to construct the final model instance.
 
@@ -51,6 +51,10 @@ It generates and commits a reduced catalog of text-capable models, derives Zod 4
   - `textModelConfigSchema`
 - Validate config for one known provider:
   - `textModelConfigSchemasByProvider[providerId]`
+- Accept newer or older model ids at runtime:
+  - `resolveTextModel`
+  - `resolveTextModelLoadPlan`
+  - `loadTextModel`
 - Generate editor-facing JSON Schema:
   - `textModelConfigJsonSchema`
   - `textModelConfigJsonSchemasByProvider[providerId]`
@@ -64,6 +68,7 @@ It generates and commits a reduced catalog of text-capable models, derives Zod 4
 ## Recommended Patterns
 
 - Validate config at the boundary where JSON enters the system, then persist the parsed `{ provider, model }`.
+- Use the shipped JSON Schema files for autocomplete and catalog-guided validation, but let runtime loading accept model ids that are newer or older than the bundled catalog.
 - Treat `installationRoot` as the host application's dependency root, not the library's source directory.
 - Use `resolveTextModelLoadPlan` when the host wants to audit, install, or manually import provider packages before execution.
 - Keep secrets and provider-factory settings in environment variables or `packageOptions`, not in `TextModelConfig`.
@@ -77,6 +82,7 @@ It generates and commits a reduced catalog of text-capable models, derives Zod 4
 ## Invariants and Constraints
 
 - Only models whose declared output modalities include `text` are retained.
+- Runtime resolution falls back to provider defaults when a model id is not present in the generated catalog.
 - Generated files are data-only and committed to the repository.
 - Zod is the validation source of truth; JSON Schema is emitted from Zod rather than maintained separately.
 - Every retained npm package must have a handwritten adapter or generation fails.
@@ -87,8 +93,6 @@ It generates and commits a reduced catalog of text-capable models, derives Zod 4
 
 - `UnknownProviderError`
   - The provider id is missing from the generated catalog.
-- `UnknownModelError`
-  - The provider exists, but the selected model does not belong to it.
 - `MissingTemplateVariableError`
   - A catalog-derived template could not be expanded because an environment variable was missing.
 - `MissingProviderPackageError`

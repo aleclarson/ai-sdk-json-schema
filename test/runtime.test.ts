@@ -55,9 +55,27 @@ describe('runtime resolution', () => {
     const config = findConfig(({ packageName }) => packageName === '@ai-sdk/openai')
     const descriptor = resolveTextModel(config)
 
+    expect(descriptor.catalogMatch).toBe(true)
     expect(descriptor.provider).toBe(config.provider)
     expect(descriptor.model).toBe(config.model)
     expect(descriptor.packageName).toBe('@ai-sdk/openai')
+  })
+
+  test('accepts unknown model ids and falls back to provider defaults', () => {
+    const config = {
+      provider: 'openai',
+      model: 'gpt-next-preview',
+    }
+    const descriptor = resolveTextModel(config)
+    const plan = resolveTextModelLoadPlan(config, {
+      installationRoot: workspaceRoot,
+    })
+
+    expect(descriptor.catalogMatch).toBe(false)
+    expect(descriptor.name).toBe('gpt-next-preview')
+    expect(descriptor.packageName).toBe('@ai-sdk/openai')
+    expect(plan.descriptor.model).toBe('gpt-next-preview')
+    expect(plan.modules.length).toBeGreaterThan(0)
   })
 
   test('resolves module plans relative to installationRoot', () => {
@@ -155,6 +173,20 @@ describe('runtime loading', () => {
     const model = await loadTextModel(config, {
       installationRoot: workspaceRoot,
     })
+
+    expect(model).toBeDefined()
+  })
+
+  test('loads an unknown model id through provider defaults', async () => {
+    const model = await loadTextModel(
+      {
+        provider: 'openai',
+        model: 'gpt-next-preview',
+      },
+      {
+        installationRoot: workspaceRoot,
+      },
+    )
 
     expect(model).toBeDefined()
   })

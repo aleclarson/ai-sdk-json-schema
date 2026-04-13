@@ -13,7 +13,8 @@ export class UnknownProviderError extends Error {
 }
 
 /**
- * Thrown when a provider exists but the selected model id does not belong to it.
+ * Thrown by catalog-bound validation paths when a provider exists but the
+ * selected model id does not belong to it.
  */
 export class UnknownModelError extends Error {
   readonly provider: string
