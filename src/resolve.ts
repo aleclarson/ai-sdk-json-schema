@@ -156,6 +156,10 @@ export function resolveTextModel(config: unknown): TextModelDescriptor {
 /**
  * Builds the adapter-aware runtime plan required to load a validated text
  * model, without resolving modules from disk or importing anything.
+ *
+ * This is the host-facing planning boundary for custom package loading policy.
+ * It expands catalog templates such as `${ENV_VAR}`, applies adapter logic, and
+ * merges runtime `packageOptions` into the planned operations.
  */
 export function buildTextModelLoadPlan(
   config: unknown,
@@ -184,6 +188,9 @@ export function buildTextModelLoadPlan(
 /**
  * Resolves each module specifier in an unresolved load plan relative to an
  * installation root, without importing anything.
+ *
+ * Use this only after the host has decided that package resolution should be
+ * anchored to a concrete dependency root.
  */
 export function resolveTextModelModules(
   plan: UnresolvedTextModelLoadPlan,
@@ -201,6 +208,10 @@ export function resolveTextModelModules(
 
 /**
  * Executes a text-model load plan and returns the constructed model instance.
+ *
+ * Unresolved plans require a host-provided `loadModule` callback. Resolved
+ * plans use the callback when provided, otherwise they import the planned file
+ * URLs directly.
  */
 export function executeTextModelLoadPlan(
   plan: UnresolvedTextModelLoadPlan,
@@ -311,6 +322,10 @@ export async function executeTextModelLoadPlan(
 /**
  * Convenience helper that builds, resolves, and executes a text-model load
  * plan from a validated configuration.
+ *
+ * This is the simplest path for consumers that do not need custom provider
+ * loading policy. Hosts that bundle some providers or install on demand should
+ * use the three lower-level stages directly.
  */
 export async function loadTextModel(
   config: unknown,

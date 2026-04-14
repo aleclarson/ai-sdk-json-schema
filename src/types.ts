@@ -53,6 +53,9 @@ export interface TextModelDescriptor extends TextModelConfig {
 export interface TextModelModulePlan {
   role: string
   specifier: string
+  /**
+   * Package identity for host-owned install or import policy decisions.
+   */
   packageName: string
   exportName: string
 }
@@ -118,6 +121,9 @@ export type TextModelLoadOperation =
  * Adapter-aware runtime plan that has not been resolved against the filesystem.
  */
 export interface UnresolvedTextModelLoadPlan {
+  /**
+   * Discriminant used by {@link executeTextModelLoadPlan}.
+   */
   stage: 'unresolved'
   descriptor: TextModelDescriptor
   adapterId: string
@@ -130,6 +136,9 @@ export interface UnresolvedTextModelLoadPlan {
  * Filesystem-resolved runtime plan for loading a configured text model.
  */
 export interface ResolvedTextModelLoadPlan {
+  /**
+   * Discriminant used by {@link executeTextModelLoadPlan}.
+   */
   stage: 'resolved'
   descriptor: TextModelDescriptor
   adapterId: string
@@ -157,6 +166,10 @@ export interface ResolveTextModelModulesOptions {
  * Runtime-only options used while executing an unresolved text-model load plan.
  */
 export interface ExecuteUnresolvedTextModelLoadPlanOptions {
+  /**
+   * Host-supplied module loader used when the plan has not been resolved against
+   * the filesystem.
+   */
   loadModule: (module: TextModelModulePlan) => Promise<Record<string, unknown>>
 }
 
@@ -164,6 +177,9 @@ export interface ExecuteUnresolvedTextModelLoadPlanOptions {
  * Runtime-only options used while executing a resolved text-model load plan.
  */
 export interface ExecuteResolvedTextModelLoadPlanOptions {
+  /**
+   * Optional override for the default file-URL-based module loading path.
+   */
   loadModule?: (module: ResolvedTextModelModule) => Promise<Record<string, unknown>>
 }
 

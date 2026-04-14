@@ -77,6 +77,7 @@ That split lets hosts choose provider-loading policy before they commit to an `i
   - `loadTextModel`
 - Execute a plan with host-owned module loading:
   - `executeTextModelLoadPlan`
+  - See `examples/execute-load-plan.ts` for the bundled-provider flow.
 
 ## Recommended Patterns
 
