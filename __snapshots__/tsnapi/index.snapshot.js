@@ -4,6 +4,8 @@ export class AdapterConfigurationError extends Error {
   adapterId
   constructor(_, _) {}
 }
+export function buildTextModelLoadPlan(_, _) {}
+export async function executeTextModelLoadPlan(_, _) {}
 export var generatedCatalog /* const */
 export class InvalidProviderModuleError extends Error {
   specifier
@@ -24,7 +26,7 @@ export class MissingTemplateVariableError extends Error {
   constructor(_, _) {}
 }
 export function resolveTextModel(_) {}
-export function resolveTextModelLoadPlan(_, _) {}
+export function resolveTextModelModules(_, _) {}
 export var textModelConfigJsonSchema /* const */
 export var textModelConfigJsonSchemasByProvider /* const */
 export var textModelConfigSchema /* const */

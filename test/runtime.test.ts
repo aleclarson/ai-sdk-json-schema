@@ -5,7 +5,13 @@ import path from 'node:path'
 
 import { generatedCatalog } from '../src/catalog'
 import { MissingProviderPackageError, MissingTemplateVariableError } from '../src/errors'
-import { loadTextModel, resolveTextModel, resolveTextModelLoadPlan } from '../src/index'
+import {
+  buildTextModelLoadPlan,
+  executeTextModelLoadPlan,
+  loadTextModel,
+  resolveTextModel,
+  resolveTextModelModules,
+} from '../src/index'
 
 const workspaceRoot = path.resolve(import.meta.dir, '..')
 
@@ -38,7 +44,7 @@ function findConfig(
   throw new Error('No matching model found in generated catalog')
 }
 
-function getPlanFactoryOptions(plan: ReturnType<typeof resolveTextModelLoadPlan>) {
+function getPlanFactoryOptions(plan: ReturnType<typeof buildTextModelLoadPlan>) {
   const createProviderOperation = plan.operations.find(
     (operation) => operation.kind === 'create-binding' && operation.binding === 'provider',
   )
@@ -50,7 +56,7 @@ function getPlanFactoryOptions(plan: ReturnType<typeof resolveTextModelLoadPlan>
   return createProviderOperation.options
 }
 
-describe('runtime resolution', () => {
+describe('runtime planning', () => {
   test('returns runtime metadata from resolveTextModel', () => {
     const config = findConfig(({ packageName }) => packageName === '@ai-sdk/openai')
     const descriptor = resolveTextModel(config)
@@ -61,32 +67,21 @@ describe('runtime resolution', () => {
     expect(descriptor.packageName).toBe('@ai-sdk/openai')
   })
 
-  test('accepts unknown model ids and falls back to provider defaults', () => {
+  test('builds an unresolved plan and accepts unknown model ids', () => {
     const config = {
       provider: 'openai',
       model: 'gpt-next-preview',
     }
     const descriptor = resolveTextModel(config)
-    const plan = resolveTextModelLoadPlan(config, {
-      installationRoot: workspaceRoot,
-    })
+    const plan = buildTextModelLoadPlan(config)
 
     expect(descriptor.catalogMatch).toBe(false)
     expect(descriptor.name).toBe('gpt-next-preview')
     expect(descriptor.packageName).toBe('@ai-sdk/openai')
+    expect(plan.stage).toBe('unresolved')
     expect(plan.descriptor.model).toBe('gpt-next-preview')
     expect(plan.modules.length).toBeGreaterThan(0)
-  })
-
-  test('resolves module plans relative to installationRoot', () => {
-    const config = findConfig(({ packageName }) => packageName === '@openrouter/ai-sdk-provider')
-    const plan = resolveTextModelLoadPlan(config, {
-      installationRoot: workspaceRoot,
-    })
-
-    expect(plan.modules.length).toBeGreaterThan(0)
-    expect(plan.modules[0]?.resolvedPath).toContain('node_modules')
-    expect(plan.modules[0]?.fileUrl.startsWith('file:')).toBe(true)
+    expect('resolvedPath' in plan.modules[0]!).toBe(false)
   })
 
   test('interpolates API templates and fails on missing env variables', () => {
@@ -99,8 +94,7 @@ describe('runtime resolution', () => {
       variableNames.map((name) => [name, `${name.toLowerCase()}-value`]),
     )
 
-    const plan = resolveTextModelLoadPlan(config, {
-      installationRoot: workspaceRoot,
+    const plan = buildTextModelLoadPlan(config, {
       env,
     })
     const options = getPlanFactoryOptions(plan)
@@ -108,20 +102,33 @@ describe('runtime resolution', () => {
     expect(JSON.stringify(options)).not.toContain('${')
 
     expect(() =>
-      resolveTextModelLoadPlan(config, {
-        installationRoot: workspaceRoot,
+      buildTextModelLoadPlan(config, {
         env: {},
       }),
     ).toThrow(MissingTemplateVariableError)
   })
 
+  test('resolves module plans relative to installationRoot', () => {
+    const config = findConfig(({ packageName }) => packageName === '@openrouter/ai-sdk-provider')
+    const unresolvedPlan = buildTextModelLoadPlan(config)
+    const plan = resolveTextModelModules(unresolvedPlan, {
+      installationRoot: workspaceRoot,
+    })
+
+    expect(plan.stage).toBe('resolved')
+    expect(plan.modules.length).toBeGreaterThan(0)
+    expect(plan.modules[0]?.resolvedPath).toContain('node_modules')
+    expect(plan.modules[0]?.fileUrl.startsWith('file:')).toBe(true)
+  })
+
   test('throws when the package is missing from installationRoot', async () => {
     const config = findConfig(({ packageName }) => packageName === '@ai-sdk/openai')
+    const unresolvedPlan = buildTextModelLoadPlan(config)
     const missingRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'ai-sdk-json-schema-empty-'))
 
     try {
       expect(() =>
-        resolveTextModelLoadPlan(config, {
+        resolveTextModelModules(unresolvedPlan, {
           installationRoot: missingRoot,
         }),
       ).toThrow(MissingProviderPackageError)
@@ -134,35 +141,39 @@ describe('runtime resolution', () => {
   })
 })
 
-describe('runtime loading', () => {
-  test('loads an official provider model from installationRoot', async () => {
+describe('runtime execution', () => {
+  test('executes an unresolved plan through a host-provided loader', async () => {
     const config = findConfig(({ packageName }) => packageName === '@ai-sdk/openai')
-    const model = await loadTextModel(config, {
-      installationRoot: workspaceRoot,
+    const plan = buildTextModelLoadPlan(config)
+
+    const model = await executeTextModelLoadPlan(plan, {
+      async loadModule(module) {
+        return (await import(module.specifier)) as Record<string, unknown>
+      },
     })
 
     expect(model).toBeDefined()
   })
 
-  test('loads a third-party provider model from installationRoot', async () => {
+  test('executes a resolved plan through the default importer', async () => {
     const config = findConfig(({ packageName }) => packageName === '@openrouter/ai-sdk-provider')
-    const model = await loadTextModel(config, {
+    const unresolvedPlan = buildTextModelLoadPlan(config)
+    const resolvedPlan = resolveTextModelModules(unresolvedPlan, {
       installationRoot: workspaceRoot,
     })
+    const model = await executeTextModelLoadPlan(resolvedPlan)
 
     expect(model).toBeDefined()
   })
 
-  test('returns a multi-module plan for ai-gateway and loads it', async () => {
+  test('returns a multi-module gateway plan and executes it through a host loader', async () => {
     const config = findConfig(
       ({ providerId, modelId, packageName }) =>
         providerId === 'cloudflare-ai-gateway' &&
         packageName === 'ai-gateway-provider' &&
         modelId.startsWith('openai/'),
     )
-    const plan = resolveTextModelLoadPlan(config, {
-      installationRoot: workspaceRoot,
-    })
+    const plan = buildTextModelLoadPlan(config)
 
     expect(plan.modules.length).toBe(2)
     expect(plan.modules.some((module) => module.specifier === 'ai-gateway-provider')).toBe(true)
@@ -170,8 +181,10 @@ describe('runtime loading', () => {
       plan.modules.some((module) => module.specifier.startsWith('ai-gateway-provider/providers/')),
     ).toBe(true)
 
-    const model = await loadTextModel(config, {
-      installationRoot: workspaceRoot,
+    const model = await executeTextModelLoadPlan(plan, {
+      async loadModule(module) {
+        return (await import(module.specifier)) as Record<string, unknown>
+      },
     })
 
     expect(model).toBeDefined()

@@ -1,10 +1,14 @@
 import { AdapterConfigurationError } from '../errors'
-import type { TextModelDescriptor, TextModelLoadOperation } from '../types'
-import { isPlainObject, mergeOptions, type UnresolvedModulePlan } from './utils'
+import type {
+  TextModelDescriptor,
+  TextModelLoadOperation,
+  TextModelModulePlan,
+} from '../types'
+import { isPlainObject, mergeOptions } from './utils'
 
 export interface UnresolvedTextModelLoadPlan {
   adapterId: string
-  modules: UnresolvedModulePlan[]
+  modules: TextModelModulePlan[]
   operations: TextModelLoadOperation[]
   resultBinding: string
 }
@@ -169,6 +173,7 @@ function createCallableAdapter(config: CallableAdapterConfig): TextModelAdapter 
           {
             role: 'provider-factory',
             specifier: config.moduleSpecifier ?? config.id,
+            packageName: config.id,
             exportName: config.createExportName,
           },
         ],
@@ -392,11 +397,13 @@ const aiGatewayAdapter: TextModelAdapter = {
         {
           role: 'gateway-factory',
           specifier: 'ai-gateway-provider',
+          packageName: 'ai-gateway-provider',
           exportName: 'createAiGateway',
         },
         {
           role: 'upstream-factory',
           specifier: upstream.specifier,
+          packageName: 'ai-gateway-provider',
           exportName: upstream.exportName,
         },
       ],

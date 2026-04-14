@@ -8,13 +8,10 @@ import {
   MissingProviderPackageError,
   MissingTemplateVariableError,
 } from '../errors'
-import type { ResolvedTextModelModule, TextModelLoadArgument } from '../types'
-
-export interface UnresolvedModulePlan {
-  role: string
-  specifier: string
-  exportName: string
-}
+import type {
+  ResolvedTextModelModule,
+  TextModelModulePlan,
+} from '../types'
 
 export function isPlainObject(value: unknown): value is Record<string, unknown> {
   if (typeof value !== 'object' || value === null) {
@@ -74,8 +71,7 @@ export function expandTemplate(
 
 export function resolveModulePlans(
   installationRoot: string,
-  packageName: string,
-  modules: UnresolvedModulePlan[],
+  modules: TextModelModulePlan[],
 ): ResolvedTextModelModule[] {
   const anchorPath = path.join(installationRoot, 'package.json')
   const require = createRequire(anchorPath)
@@ -87,13 +83,14 @@ export function resolveModulePlans(
       return {
         role: modulePlan.role,
         specifier: modulePlan.specifier,
+        packageName: modulePlan.packageName,
         resolvedPath,
         fileUrl: pathToFileURL(resolvedPath).href,
         exportName: modulePlan.exportName,
       }
     } catch (error) {
       throw new MissingProviderPackageError({
-        packageName,
+        packageName: modulePlan.packageName,
         specifier: modulePlan.specifier,
         installationRoot,
         cause: error,
@@ -134,15 +131,4 @@ export async function loadModuleExports(
     resolvedPath: modulePlan.resolvedPath,
     exportName: modulePlan.exportName,
   })
-}
-
-export function resolveOperationArgument(
-  bindings: Map<string, unknown>,
-  argument: TextModelLoadArgument,
-): unknown {
-  if (argument.kind === 'value') {
-    return argument.value
-  }
-
-  return bindings.get(argument.binding)
 }

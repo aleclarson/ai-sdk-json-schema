@@ -1,4 +1,4 @@
-import { generatedCatalog, resolveTextModelLoadPlan } from 'ai-sdk-json-schema'
+import { buildTextModelLoadPlan, generatedCatalog, resolveTextModelModules } from 'ai-sdk-json-schema'
 
 function findConfigForPackages(packageNames: readonly string[]) {
   for (const packageName of packageNames) {
@@ -18,10 +18,12 @@ function findConfigForPackages(packageNames: readonly string[]) {
 }
 
 const config = findConfigForPackages(['@openrouter/ai-sdk-provider', '@ai-sdk/openai'])
-const plan = resolveTextModelLoadPlan(config, {
+const unresolvedPlan = buildTextModelLoadPlan(config)
+const resolvedPlan = resolveTextModelModules(unresolvedPlan, {
   installationRoot: process.cwd(),
 })
 
-console.log(plan.adapterId)
-console.log(plan.modules)
-console.log(plan.operations)
+console.log(unresolvedPlan.adapterId)
+console.log(unresolvedPlan.modules)
+console.log(resolvedPlan.modules)
+console.log(unresolvedPlan.operations)

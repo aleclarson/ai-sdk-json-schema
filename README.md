@@ -2,7 +2,7 @@
 
 ## Purpose
 
-`ai-sdk-json-schema` turns the `models.dev` provider catalog into committed generated data, Zod-first JSON config schemas, and runtime helpers for resolving or loading text models from installed provider packages.
+`ai-sdk-json-schema` turns the `models.dev` provider catalog into committed generated data, Zod-first JSON config schemas, and runtime helpers for planning, resolving, and loading text models from provider packages.
 
 The shipped JSON Schema files enumerate known providers and use model-id `examples` for autocomplete, while still allowing any string model id for known providers.
 

@@ -7,7 +7,13 @@ export {
   UnknownModelError,
   UnknownProviderError,
 } from './errors'
-export { loadTextModel, resolveTextModel, resolveTextModelLoadPlan } from './resolve'
+export {
+  buildTextModelLoadPlan,
+  executeTextModelLoadPlan,
+  loadTextModel,
+  resolveTextModel,
+  resolveTextModelModules,
+} from './resolve'
 export {
   textModelConfigJsonSchema,
   textModelConfigJsonSchemasByProvider,
@@ -15,14 +21,20 @@ export {
   textModelConfigSchemasByProvider,
 } from './schema'
 export type {
+  BuildTextModelLoadPlanOptions,
+  ExecuteResolvedTextModelLoadPlanOptions,
+  ExecuteUnresolvedTextModelLoadPlanOptions,
   JsonSchemaObject,
+  LoadTextModelOptions,
+  ResolvedTextModelLoadPlan,
   ResolvedTextModelModule,
-  ResolveTextModelLoadPlanOptions,
+  ResolveTextModelModulesOptions,
   TextModelConfig,
   TextModelCreateBindingOperation,
   TextModelDescriptor,
   TextModelInvokeBindingOperation,
   TextModelLoadArgument,
   TextModelLoadOperation,
-  TextModelLoadPlan,
+  TextModelModulePlan,
+  UnresolvedTextModelLoadPlan,
 } from './types'

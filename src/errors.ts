@@ -76,12 +76,14 @@ export class MissingProviderPackageError extends Error {
  */
 export class InvalidProviderModuleError extends Error {
   readonly specifier: string
-  readonly resolvedPath: string
+  readonly resolvedPath?: string
   readonly exportName: string
 
-  constructor(args: { specifier: string; resolvedPath: string; exportName: string }) {
+  constructor(args: { specifier: string; resolvedPath?: string; exportName: string }) {
     super(
-      `Resolved module "${args.specifier}" at "${args.resolvedPath}" does not export "${args.exportName}"`,
+      args.resolvedPath
+        ? `Resolved module "${args.specifier}" at "${args.resolvedPath}" does not export "${args.exportName}"`
+        : `Provider module "${args.specifier}" does not export "${args.exportName}"`,
     )
     this.name = 'InvalidProviderModuleError'
     this.specifier = args.specifier

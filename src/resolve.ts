@@ -2,26 +2,43 @@ import process from 'node:process'
 
 import { z } from 'zod'
 
-import { UnknownProviderError, InvalidProviderModuleError } from './errors'
+import {
+  AdapterConfigurationError,
+  InvalidProviderModuleError,
+  UnknownProviderError,
+} from './errors'
 import { generatedCatalog } from './generated/catalog'
 import { buildUnresolvedTextModelLoadPlan } from './runtime/adapters'
 import {
   expandTemplate,
   loadModuleExports,
   resolveModulePlans,
-  resolveOperationArgument,
 } from './runtime/utils'
 import type {
-  ResolveTextModelLoadPlanOptions,
+  BuildTextModelLoadPlanOptions,
+  ExecuteResolvedTextModelLoadPlanOptions,
+  ExecuteUnresolvedTextModelLoadPlanOptions,
+  LoadTextModelOptions,
+  ResolvedTextModelLoadPlan,
+  ResolvedTextModelModule,
+  ResolveTextModelModulesOptions,
   TextModelConfig,
   TextModelDescriptor,
-  TextModelLoadPlan,
+  TextModelLoadArgument,
+  TextModelModulePlan,
+  UnresolvedTextModelLoadPlan,
 } from './types'
 
 const textModelConfigInputSchema = z.object({
   provider: z.string(),
   model: z.string(),
 })
+
+interface BindingSource {
+  specifier: string
+  resolvedPath?: string
+  exportName: string
+}
 
 function createDescriptor(config: TextModelConfig): TextModelDescriptor {
   const provider = generatedCatalog.providers[config.provider]
@@ -72,18 +89,56 @@ function createDescriptor(config: TextModelConfig): TextModelDescriptor {
 
 function getCallable(
   value: unknown,
-  moduleRole: string,
-  exportName: string,
+  source: BindingSource,
+  exportName: string = source.exportName,
 ): (...args: unknown[]) => unknown {
   if (typeof value === 'function') {
     return value as (...args: unknown[]) => unknown
   }
 
   throw new InvalidProviderModuleError({
-    specifier: moduleRole,
-    resolvedPath: moduleRole,
+    specifier: source.specifier,
+    resolvedPath: source.resolvedPath,
     exportName,
   })
+}
+
+async function loadModuleForExecution(
+  module: TextModelModulePlan | ResolvedTextModelModule,
+  loadModule:
+    | ((module: TextModelModulePlan | ResolvedTextModelModule) => Promise<Record<string, unknown>>)
+    | undefined,
+): Promise<Record<string, unknown>> {
+  if (loadModule) {
+    return loadModule(module)
+  }
+
+  if ('resolvedPath' in module) {
+    return loadModuleExports(module)
+  }
+
+  throw new TypeError(
+    'executeTextModelLoadPlan requires options.loadModule when plan.stage is "unresolved"',
+  )
+}
+
+function resolveExecutionArgument(
+  adapterId: string,
+  bindings: Map<string, unknown>,
+  argument: TextModelLoadArgument,
+): unknown {
+  if (argument.kind === 'value') {
+    return argument.value
+  }
+
+  if (!bindings.has(argument.binding)) {
+    throw new AdapterConfigurationError(
+      adapterId,
+      `Adapter "${adapterId}" references unknown binding "${argument.binding}"`,
+    )
+  }
+
+  return bindings.get(argument.binding)
 }
 
 /**
@@ -99,17 +154,13 @@ export function resolveTextModel(config: unknown): TextModelDescriptor {
 }
 
 /**
- * Resolves the exact module import plan required to load a validated text model
- * from an installation root.
- *
- * The returned plan expands template variables, resolves every module specifier
- * to an absolute path and file URL, and describes the binding operations needed
- * to construct the final model without importing anything.
+ * Builds the adapter-aware runtime plan required to load a validated text
+ * model, without resolving modules from disk or importing anything.
  */
-export function resolveTextModelLoadPlan(
+export function buildTextModelLoadPlan(
   config: unknown,
-  options: ResolveTextModelLoadPlanOptions = {},
-): TextModelLoadPlan {
+  options: BuildTextModelLoadPlanOptions = {},
+): UnresolvedTextModelLoadPlan {
   const descriptor = resolveTextModel(config)
   const expandedDescriptor = {
     ...descriptor,
@@ -119,42 +170,71 @@ export function resolveTextModelLoadPlan(
     expandedDescriptor,
     options.packageOptions,
   )
-  const installationRoot = options.installationRoot ?? process.cwd()
-  const modules = resolveModulePlans(
-    installationRoot,
-    expandedDescriptor.packageName,
-    unresolvedPlan.modules,
-  )
 
   return {
+    stage: 'unresolved',
     descriptor: expandedDescriptor,
     adapterId: unresolvedPlan.adapterId,
-    modules,
+    modules: unresolvedPlan.modules,
     operations: unresolvedPlan.operations,
     resultBinding: unresolvedPlan.resultBinding,
   }
 }
 
 /**
- * Loads and executes the resolved module plan for a validated text-model
- * configuration.
- *
- * The return type is intentionally broad because supported provider packages do
- * not all expose the same concrete model type across SDK generations.
+ * Resolves each module specifier in an unresolved load plan relative to an
+ * installation root, without importing anything.
  */
-export async function loadTextModel(
-  config: unknown,
-  options: ResolveTextModelLoadPlanOptions = {},
+export function resolveTextModelModules(
+  plan: UnresolvedTextModelLoadPlan,
+  options: ResolveTextModelModulesOptions,
+): ResolvedTextModelLoadPlan {
+  return {
+    stage: 'resolved',
+    descriptor: plan.descriptor,
+    adapterId: plan.adapterId,
+    modules: resolveModulePlans(options.installationRoot, plan.modules),
+    operations: plan.operations,
+    resultBinding: plan.resultBinding,
+  }
+}
+
+/**
+ * Executes a text-model load plan and returns the constructed model instance.
+ */
+export function executeTextModelLoadPlan(
+  plan: UnresolvedTextModelLoadPlan,
+  options: ExecuteUnresolvedTextModelLoadPlanOptions,
+): Promise<unknown>
+export function executeTextModelLoadPlan(
+  plan: ResolvedTextModelLoadPlan,
+  options?: ExecuteResolvedTextModelLoadPlanOptions,
+): Promise<unknown>
+export async function executeTextModelLoadPlan(
+  plan: UnresolvedTextModelLoadPlan | ResolvedTextModelLoadPlan,
+  options:
+    | ExecuteResolvedTextModelLoadPlanOptions
+    | ExecuteUnresolvedTextModelLoadPlanOptions = {},
 ): Promise<unknown> {
-  const plan = resolveTextModelLoadPlan(config, options)
   const modulesByRole = new Map(plan.modules.map((module) => [module.role, module]))
   const exportsByRole = new Map<string, Record<string, unknown>>()
 
   for (const module of plan.modules) {
-    exportsByRole.set(module.role, await loadModuleExports(module))
+    exportsByRole.set(
+      module.role,
+      await loadModuleForExecution(
+        module,
+        options.loadModule as
+          | ((module: TextModelModulePlan | ResolvedTextModelModule) => Promise<
+              Record<string, unknown>
+            >)
+          | undefined,
+      ),
+    )
   }
 
   const bindings = new Map<string, unknown>()
+  const bindingSources = new Map<string, BindingSource>()
 
   for (const operation of plan.operations) {
     if (operation.kind === 'create-binding') {
@@ -162,42 +242,84 @@ export async function loadTextModel(
       const loaded = exportsByRole.get(operation.moduleRole)
 
       if (!module || !loaded) {
-        throw new InvalidProviderModuleError({
-          specifier: operation.moduleRole,
-          resolvedPath: operation.moduleRole,
-          exportName: operation.moduleRole,
-        })
+        throw new AdapterConfigurationError(
+          plan.adapterId,
+          `Adapter "${plan.adapterId}" references unknown module role "${operation.moduleRole}"`,
+        )
       }
 
+      const moduleSource: BindingSource = {
+        specifier: module.specifier,
+        resolvedPath: 'resolvedPath' in module ? module.resolvedPath : undefined,
+        exportName: module.exportName,
+      }
       const exportedValue = loaded[module.exportName]
-      const callable = getCallable(exportedValue, module.specifier, module.exportName)
+      const callable = getCallable(exportedValue, moduleSource)
 
       bindings.set(operation.binding, callable(operation.options))
+      bindingSources.set(operation.binding, moduleSource)
       continue
     }
 
     const target = bindings.get(operation.targetBinding)
-    const args = operation.args.map((argument) => resolveOperationArgument(bindings, argument))
+    const targetSource =
+      bindingSources.get(operation.targetBinding) ?? {
+        specifier: operation.targetBinding,
+        exportName: operation.targetBinding,
+      }
+    const args = operation.args.map((argument) =>
+      resolveExecutionArgument(plan.adapterId, bindings, argument),
+    )
 
     if (operation.methodName) {
       if (!target || typeof target !== 'object') {
         throw new InvalidProviderModuleError({
-          specifier: operation.targetBinding,
-          resolvedPath: operation.targetBinding,
+          specifier: targetSource.specifier,
+          resolvedPath: targetSource.resolvedPath,
           exportName: operation.methodName,
         })
       }
 
       const methodValue = (target as Record<string, unknown>)[operation.methodName]
-      const callable = getCallable(methodValue, operation.targetBinding, operation.methodName)
+      const callable = getCallable(methodValue, targetSource, operation.methodName)
 
       bindings.set(operation.binding, callable(...args))
+      bindingSources.set(operation.binding, {
+        specifier: targetSource.specifier,
+        resolvedPath: targetSource.resolvedPath,
+        exportName: operation.methodName,
+      })
       continue
     }
 
-    const callable = getCallable(target, operation.targetBinding, operation.targetBinding)
+    const callable = getCallable(target, targetSource)
+
     bindings.set(operation.binding, callable(...args))
+    bindingSources.set(operation.binding, targetSource)
+  }
+
+  if (!bindings.has(plan.resultBinding)) {
+    throw new AdapterConfigurationError(
+      plan.adapterId,
+      `Adapter "${plan.adapterId}" did not produce result binding "${plan.resultBinding}"`,
+    )
   }
 
   return bindings.get(plan.resultBinding)
+}
+
+/**
+ * Convenience helper that builds, resolves, and executes a text-model load
+ * plan from a validated configuration.
+ */
+export async function loadTextModel(
+  config: unknown,
+  options: LoadTextModelOptions = {},
+): Promise<unknown> {
+  const plan = buildTextModelLoadPlan(config, options)
+  const resolvedPlan = resolveTextModelModules(plan, {
+    installationRoot: options.installationRoot ?? process.cwd(),
+  })
+
+  return executeTextModelLoadPlan(resolvedPlan)
 }
