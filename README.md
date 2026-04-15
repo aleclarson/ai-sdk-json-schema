@@ -37,7 +37,7 @@ console.log(descriptor.packageName)
 - Conceptual model and API selection: [docs/context.md](./docs/context.md)
 - Runnable usage patterns: [examples/validate-config.ts](./examples/validate-config.ts), [examples/resolve-load-plan.ts](./examples/resolve-load-plan.ts), [examples/execute-load-plan.ts](./examples/execute-load-plan.ts), [examples/load-text-model.ts](./examples/load-text-model.ts)
 - Exact exported signatures: [dist/index.d.mts](./dist/index.d.mts)
-- Shipped JSON Schema files after build: `dist/schemas/text-model-config.schema.json` and `dist/schemas/providers/*.schema.json`
+- Shipped JSON Schema file after build: `dist/schemas/text-model-config.schema.json`
 
 The examples in this repo use the published package import path and can be run locally after `pnpm build`.
 

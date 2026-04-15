@@ -1,4 +1,4 @@
-import { textModelConfigJsonSchema, textModelConfigJsonSchemasByProvider } from '../schema'
+import { textModelConfigJsonSchema } from '../schema'
 import type { JsonSchemaObject } from '../types'
 
 export interface JsonSchemaFileEntry {
@@ -12,12 +12,6 @@ export function createJsonSchemaFileEntries(): JsonSchemaFileEntry[] {
       path: 'text-model-config.schema.json',
       schema: textModelConfigJsonSchema,
     },
-    ...Object.entries(textModelConfigJsonSchemasByProvider)
-      .sort(([left], [right]) => left.localeCompare(right))
-      .map(([providerId, schema]) => ({
-        path: `providers/${providerId}.schema.json`,
-        schema,
-      })),
   ]
 }
 

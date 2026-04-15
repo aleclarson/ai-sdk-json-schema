@@ -21,7 +21,8 @@ async function main() {
     await fs.writeFile(outputPath, stringifyJsonSchema(entry.schema))
   }
 
-  console.log(`Wrote ${entries.length} JSON Schema files to dist/schemas`)
+  const label = entries.length === 1 ? 'file' : 'files'
+  console.log(`Wrote ${entries.length} JSON Schema ${label} to dist/schemas`)
 }
 
 await main()
