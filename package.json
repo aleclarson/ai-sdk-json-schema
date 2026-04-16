@@ -8,7 +8,9 @@
     "url": "https://github.com/aleclarson/ai-sdk-json-schema.git"
   },
   "files": [
-    "dist"
+    "dist",
+    "docs",
+    "examples"
   ],
   "type": "module",
   "exports": {
