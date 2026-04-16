@@ -1,13 +1,9 @@
-import {
-  loadTranscriptionModel,
-  resolveModel,
-  transcriptionModelCatalog,
-} from 'ai-sdk-json-schema'
+import { loadTranscriptionModel, resolveModel, transcriptionModelCatalog } from 'ai-sdk-json-schema'
 
-function findConfigByPackage(packageName: string) {
+function findConfig() {
   for (const [providerId, provider] of Object.entries(transcriptionModelCatalog.providers)) {
     for (const [modelId, model] of Object.entries(provider.models)) {
-      if (model.packageName === packageName) {
+      if (model.supportedLoadModes.includes('transcription')) {
         return {
           provider: providerId,
           model: modelId,
@@ -16,10 +12,10 @@ function findConfigByPackage(packageName: string) {
     }
   }
 
-  throw new Error(`No model found for package: ${packageName}`)
+  throw new Error('No dedicated transcription model found in catalog')
 }
 
-const config = findConfigByPackage('@ai-sdk/openai')
+const config = findConfig()
 const descriptor = resolveModel('transcription', config)
 const model = await loadTranscriptionModel(config, {
   installationRoot: process.cwd(),
@@ -30,5 +26,6 @@ console.log({
   provider: descriptor.provider,
   model: descriptor.model,
   packageName: descriptor.packageName,
+  supportedLoadModes: descriptor.supportedLoadModes,
   loadedType: typeof model,
 })

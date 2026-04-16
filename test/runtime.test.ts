@@ -5,8 +5,13 @@ import path from 'node:path'
 
 import { textModelCatalog } from '../src/generated/text-model-catalog'
 import { transcriptionModelCatalog } from '../src/generated/transcription-model-catalog'
-import { MissingProviderPackageError, MissingTemplateVariableError } from '../src/errors'
+import {
+  AdapterConfigurationError,
+  MissingProviderPackageError,
+  MissingTemplateVariableError,
+} from '../src/errors'
 import type { GeneratedCatalog, GeneratedCatalogProviderBase } from '../src/internal/catalog-types'
+import { createModelDescriptor } from '../src/internal/resolve-descriptor'
 import {
   buildModelLoadPlan,
   executeModelLoadPlan,
@@ -22,6 +27,7 @@ type RuntimeCatalog = GeneratedCatalog<
   GeneratedCatalogProviderBase<{
     packageName: string
     api?: string
+    supportedLoadModes?: readonly string[]
   }>
 >
 
@@ -32,6 +38,7 @@ function findConfig(
     modelId: string
     packageName: string
     api?: string
+    supportedLoadModes?: readonly string[]
   }) => boolean,
 ) {
   for (const [providerId, provider] of Object.entries(catalog.providers)) {
@@ -42,6 +49,7 @@ function findConfig(
           modelId,
           packageName: model.packageName,
           api: model.api,
+          supportedLoadModes: model.supportedLoadModes,
         })
       ) {
         return {
@@ -77,6 +85,7 @@ describe('runtime planning', () => {
     expect(descriptor.provider).toBe(config.provider)
     expect(descriptor.model).toBe(config.model)
     expect(descriptor.packageName).toBe('@ai-sdk/openai')
+    expect(descriptor.supportedLoadModes).toEqual(['text', 'transcription'])
   })
 
   test('returns runtime metadata from resolveModel for transcription mode', () => {
@@ -91,6 +100,7 @@ describe('runtime planning', () => {
     expect(descriptor.provider).toBe(config.provider)
     expect(descriptor.model).toBe(config.model)
     expect(descriptor.packageName).toBe('@ai-sdk/openai')
+    expect(descriptor.supportedLoadModes).toEqual(['text', 'transcription'])
   })
 
   test('builds an unresolved text plan and accepts unknown model ids', () => {
@@ -104,6 +114,7 @@ describe('runtime planning', () => {
     expect(descriptor.catalogMatch).toBe(false)
     expect(descriptor.name).toBe('gpt-next-preview')
     expect(descriptor.packageName).toBe('@ai-sdk/openai')
+    expect(descriptor.supportedLoadModes).toEqual(['text', 'transcription'])
     expect(plan.stage).toBe('unresolved')
     expect(plan.mode).toBe('text')
     expect(plan.descriptor.model).toBe('gpt-next-preview')
@@ -122,6 +133,114 @@ describe('runtime planning', () => {
     expect(plan.mode).toBe('transcription')
     expect(plan.descriptor.mode).toBe('transcription')
     expect(plan.modules.length).toBeGreaterThan(0)
+  })
+
+  test('returns fallback capability metadata for a text-only transcription entry', () => {
+    const config = findConfig(
+      transcriptionModelCatalog,
+      ({ supportedLoadModes }) =>
+        supportedLoadModes?.includes('text') === true &&
+        supportedLoadModes?.includes('transcription') !== true,
+    )
+    const descriptor = resolveModel('transcription', config)
+
+    expect(descriptor.mode).toBe('transcription')
+    expect(descriptor.supportedLoadModes).toEqual(['text'])
+  })
+
+  test('uses provider default capability metadata for unknown transcription model ids', () => {
+    const knownConfig = findConfig(
+      transcriptionModelCatalog,
+      ({ supportedLoadModes }) =>
+        supportedLoadModes?.includes('text') === true &&
+        supportedLoadModes?.includes('transcription') !== true,
+    )
+    const descriptor = resolveModel('transcription', {
+      provider: knownConfig.provider,
+      model: 'future-audio-model-id',
+    })
+
+    expect(descriptor.catalogMatch).toBe(false)
+    expect(descriptor.supportedLoadModes).toEqual(['text'])
+  })
+
+  test('fails transcription planning for text-only entries', () => {
+    const config = findConfig(
+      transcriptionModelCatalog,
+      ({ supportedLoadModes }) =>
+        supportedLoadModes?.includes('text') === true &&
+        supportedLoadModes?.includes('transcription') !== true,
+    )
+
+    expect(() => buildModelLoadPlan('transcription', config)).toThrow(
+      new RegExp('No transcription adapter is configured'),
+    )
+  })
+
+  test('text resolution ignores transcription-only model metadata', () => {
+    const descriptor = createModelDescriptor(
+      {
+        textModelCatalog: {
+          source: {
+            repo: 'fixture/repo',
+            ref: 'fixture-ref',
+            generatedAt: '2026-04-16T00:00:00.000Z',
+          },
+          packageNames: ['@ai-sdk/openai-compatible'],
+          providers: {
+            demo: {
+              id: 'demo',
+              name: 'Demo',
+              doc: 'https://example.com/demo',
+              env: ['DEMO_API_KEY'],
+              packageName: '@ai-sdk/openai-compatible',
+              api: 'https://provider-default.example/v1',
+              models: {},
+            },
+          },
+        },
+        transcriptionModelCatalog: {
+          source: {
+            repo: 'fixture/repo',
+            ref: 'fixture-ref',
+            generatedAt: '2026-04-16T00:00:00.000Z',
+          },
+          packageNames: ['@ai-sdk/google', '@ai-sdk/openai-compatible'],
+          providers: {
+            demo: {
+              id: 'demo',
+              name: 'Demo',
+              doc: 'https://example.com/demo',
+              env: ['DEMO_API_KEY'],
+              packageName: '@ai-sdk/openai-compatible',
+              api: 'https://provider-default.example/v1',
+              models: {
+                'audio-override': {
+                  id: 'audio-override',
+                  name: 'Audio Override',
+                  packageName: '@ai-sdk/google',
+                  api: 'https://model-override.example/v1',
+                  supportedLoadModes: ['text'],
+                },
+              },
+            },
+          },
+        },
+      },
+      'text',
+      {
+        provider: 'demo',
+        model: 'audio-override',
+      },
+    )
+
+    expect(descriptor.mode).toBe('text')
+    expect(descriptor.catalogMatch).toBe(false)
+    expect(descriptor.name).toBe('audio-override')
+    expect(descriptor.packageName).toBe('@ai-sdk/openai-compatible')
+    expect(descriptor.api).toBe('https://provider-default.example/v1')
+    expect(descriptor.shape).toBeUndefined()
+    expect(descriptor.supportedLoadModes).toEqual(['text'])
   })
 
   test('interpolates API templates and fails on missing env variables', () => {
@@ -262,6 +381,21 @@ describe('runtime execution', () => {
     })
 
     expect(model).toBeDefined()
+  })
+
+  test('fails the dedicated transcription loader for text-only entries', async () => {
+    const config = findConfig(
+      transcriptionModelCatalog,
+      ({ supportedLoadModes }) =>
+        supportedLoadModes?.includes('text') === true &&
+        supportedLoadModes?.includes('transcription') !== true,
+    )
+
+    await expect(
+      loadTranscriptionModel(config, {
+        installationRoot: workspaceRoot,
+      }),
+    ).rejects.toThrow(AdapterConfigurationError)
   })
 
   test('loads an unknown transcription model id through provider defaults', async () => {

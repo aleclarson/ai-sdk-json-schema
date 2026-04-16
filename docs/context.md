@@ -2,7 +2,7 @@
 
 `ai-sdk-json-schema` is a mode-aware catalog and runtime bridge built from `anomalyco/models.dev`.
 
-It commits two reduced catalogs:
+It ships two reduced catalogs:
 
 - `textModelCatalog`
 - `transcriptionModelCatalog`
@@ -36,9 +36,9 @@ That split lets hosts decide package-loading policy before they anchor resolutio
 - `ModelMode`
   The runtime mode discriminant: `'text' | 'transcription'`.
 - `textModelCatalog`
-  The committed data snapshot of text-capable models produced by `pnpm generate`.
+  The shipped data snapshot of text-capable models.
 - `transcriptionModelCatalog`
-  The committed data snapshot of transcription-capable models produced by `pnpm generate`.
+  The shipped data snapshot of audio-input/text-output models when the package supports at least one library runtime path.
 - `textModelConfigSchema`
   The top-level Zod schema for validating known text providers and string model ids.
 - `transcriptionModelConfigSchema`
@@ -52,17 +52,19 @@ That split lets hosts decide package-loading policy before they anchor resolutio
 
 ## Data Flow / Lifecycle
 
-1. `pnpm generate` scrapes `models.dev/providers/**`, parses TOML, applies the repo's default 8-month text cutoff and 24-month transcription cutoff, and writes committed text and transcription catalogs from the same upstream snapshot.
+1. The package ships text and transcription catalogs derived from the same `models.dev` snapshot, with separate text and transcription time windows.
 2. The text catalog retains models whose output modalities include `text`.
-3. The transcription catalog retains models whose input modalities include `audio`, whose output modalities include `text`, and whose package is loadable in transcription mode.
-4. During generation, callable-provider adapter metadata is regenerated from provider-listed package names by fetching raw declaration source from unpkg and scanning for `transcription` support.
+3. The transcription catalog retains models whose input modalities include `audio`, whose output modalities include `text`, and whose package is loadable in at least one library runtime mode: `text` or `transcription`.
+4. Callable-provider adapter metadata is generated alongside the catalogs so package capability can be inferred without probing provider packages at runtime.
 5. For editor and file validation, the text and transcription config schemas validate a `{ provider, model }` object where `provider` is catalog-known and `model` is any string.
 6. The generated JSON Schema uses the `examples` keyword to surface catalog-known model ids for autocomplete without rejecting unlisted ids.
 7. At runtime, `resolveModel(mode, config)` only requires `provider` and `model` to be strings. Unknown model ids fall back to provider defaults so newer or older model ids can still be used.
-8. `buildModelLoadPlan(mode, config, options)` expands catalog templates such as `${ENV_VAR}`, merges runtime `packageOptions`, selects an adapter, and returns unresolved module specifiers plus execution operations.
-9. `resolveModelModules(plan, options)` resolves each planned module specifier relative to `installationRoot`.
-10. `executeModelLoadPlan(plan, options)` imports or host-loads the planned modules and executes the binding operations to construct the final model instance.
-11. `loadTextModel` and `loadTranscriptionModel` are convenience wrappers that run all three stages with a default `installationRoot` of `process.cwd()`.
+8. `resolveModel` exposes `supportedLoadModes` on the descriptor so hosts can distinguish dedicated transcription support from packages that are only text-capable.
+9. `buildModelLoadPlan(mode, config, options)` expands catalog templates such as `${ENV_VAR}`, merges runtime `packageOptions`, selects an adapter, and returns unresolved module specifiers plus execution operations.
+10. `buildModelLoadPlan('transcription', ...)` remains strict. If a transcription-catalog entry only supports text mode at the package level, the load-plan boundary still fails because this library does not translate transcription selections into text-mode selections.
+11. `resolveModelModules(plan, options)` resolves each planned module specifier relative to `installationRoot`.
+12. `executeModelLoadPlan(plan, options)` imports or host-loads the planned modules and executes the binding operations to construct the final model instance.
+13. `loadTextModel` and `loadTranscriptionModel` are convenience wrappers that run all three stages with a default `installationRoot` of `process.cwd()`.
 
 ## Common Tasks -> Recommended APIs
 
@@ -78,6 +80,9 @@ That split lets hosts decide package-loading policy before they anchor resolutio
   `buildModelLoadPlan`
   `loadTextModel`
   `loadTranscriptionModel`
+- Inspect whether a transcription selection's package also supports text mode:
+  `resolveModel('transcription', config)`
+  Inspect `descriptor.supportedLoadModes`
 - Generate editor-facing JSON Schema:
   `textModelConfigJsonSchema`
   `textModelConfigJsonSchemasByProvider[providerId]`
@@ -104,7 +109,7 @@ That split lets hosts decide package-loading policy before they anchor resolutio
 - Treat `installationRoot` as the host application's dependency root, not the library's source directory.
 - Pass `mode` only at the config boundary with `resolveModel` or `buildModelLoadPlan`.
 - Reuse the mode tagged onto descriptors and plans instead of carrying extra mode state through later stages.
-- Choose `loadTextModel` or `loadTranscriptionModel` at the convenience-loader boundary instead of building a union-returning wrapper around both.
+- For transcription selections, treat `descriptor.supportedLoadModes` as package capability metadata rather than proof that the same `{ provider, model }` can be resolved in text mode.
 - Keep secrets and provider-factory settings in environment variables or `packageOptions`, not in `ModelConfig`.
 
 ## Patterns to Avoid
@@ -117,6 +122,9 @@ That split lets hosts decide package-loading policy before they anchor resolutio
 
 - Text catalog entries always declare `text` in output modalities.
 - Transcription catalog entries always declare `audio` in input modalities and `text` in output modalities.
+- Transcription catalog membership does not guarantee that `loadTranscriptionModel` works for that entry.
+- Transcription catalog entries always declare `supportedLoadModes`, which identifies package-level support for dedicated transcription APIs, text APIs, or both.
+- Text-mode resolution consults `textModelCatalog` only; it never falls back to transcription-model metadata.
 - Runtime resolution falls back to provider defaults when a model id is not present in the selected generated catalog.
 - Generated files are data-only and committed to the repository.
 - Zod is the validation source of truth; JSON Schema is emitted from Zod rather than maintained separately.
@@ -124,7 +132,7 @@ That split lets hosts decide package-loading policy before they anchor resolutio
 - `ai-gateway-provider` remains a handwritten text-only special case.
 - Module resolution is anchored to `path.join(installationRoot, 'package.json')`.
 - Catalog-provided API templates may include `${ENV_VAR}` placeholders and must be satisfiable from `options.env` or `process.env`.
-- The transcription catalog intentionally keeps only speech-to-text-relevant model metadata: `id`, `name`, `packageName`, and optional `api`.
+- The transcription catalog intentionally keeps only speech-to-text-relevant model metadata: `id`, `name`, `packageName`, optional `api`, and `supportedLoadModes`.
 
 ## Error Model
 

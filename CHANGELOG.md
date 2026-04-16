@@ -12,10 +12,18 @@
 
 - Separate text and transcription schema families, including `dist/schemas/transcription-model-config.schema.json`.
 - A generated transcription catalog with a reduced metadata shape tailored to speech-to-text use cases.
-- A generated callable-adapter metadata file that detects transcription support from raw package declaration sources on unpkg.
+- Generated callable-adapter metadata for detecting package-level transcription capability.
 - Independent default catalog windows: 8 months for text and 24 months for transcription.
+- `supportedLoadModes` metadata on transcription catalog entries and resolved descriptors so hosts can inspect package-level text versus transcription capability.
+
+### Changed
+
+- Broadened `transcriptionModelCatalog` to include audio-input/text-output models whose package supports either text mode or transcription mode in this library.
+- Kept `loadTranscriptionModel` and `buildModelLoadPlan('transcription', ...)` strict; text-only entries still fail with transcription adapter errors because the library does not translate transcription selections into text-mode selections.
 
 ### Upgrade Notes
 
 - Pass `'text'` or `'transcription'` only at the config boundary. Later stages infer mode from the descriptor or load plan.
 - Use `textModelCatalog` or `transcriptionModelCatalog` when selecting providers and bundled model examples.
+- Treat transcription catalog membership as a selection hint, not a guarantee that the dedicated transcription API is available.
+- Treat `supportedLoadModes` on transcription selections as package capability metadata, not proof that the same `{ provider, model }` can be resolved through text mode.

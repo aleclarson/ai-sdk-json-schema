@@ -1,7 +1,11 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { buildUnresolvedModelLoadPlan, supportsPackageMode } from '../runtime/adapters'
+import {
+  buildUnresolvedModelLoadPlan,
+  getSupportedLoadModes,
+  supportsPackageMode,
+} from '../runtime/adapters'
 import type { ModelDescriptor, ModelMode } from '../types'
 import type {
   GeneratedTextCatalog,
@@ -155,10 +159,6 @@ function isModelIncludedSince(model: GeneratedTextModel, since: string | undefin
   return comparableLastUpdated !== undefined && comparableLastUpdated >= since
 }
 
-function isProviderSupportedForMode(packageName: string, mode: ModelMode): boolean {
-  return supportsPackageMode(packageName, mode)
-}
-
 function assertSupportedPackageName(packageName: string, label: string, mode: ModelMode) {
   if (!supportsPackageMode(packageName, mode)) {
     throw new Error(`${label} uses unsupported ${mode} package "${packageName}"`)
@@ -180,6 +180,7 @@ function createDescriptor(
       catalogMatch: true,
       model: model.id,
       name: model.name,
+      supportedLoadModes: getSupportedLoadModes(model.packageName),
       packageName: model.packageName,
       api: model.api,
     }
@@ -196,6 +197,7 @@ function createDescriptor(
     catalogMatch: true,
     model: textModel.id,
     name: textModel.name,
+    supportedLoadModes: getSupportedLoadModes(textModel.packageName),
     family: textModel.family,
     attachment: textModel.attachment,
     reasoning: textModel.reasoning,
@@ -319,6 +321,7 @@ function createTranscriptionModel(model: GeneratedTextModel): GeneratedTranscrip
     name: model.name,
     packageName: model.packageName,
     api: model.api,
+    supportedLoadModes: getSupportedLoadModes(model.packageName),
   }
 }
 
@@ -390,12 +393,10 @@ export function createGeneratedCatalogFromProvidersDir(
       fs.readFileSync(providerTomlPath, 'utf8'),
     ) as RawProviderToml
     const defaultPackageName = assertString(rawProvider.npm, `${providerId}.provider.npm`)
+    const defaultSupportedLoadModes = getSupportedLoadModes(defaultPackageName)
 
-    if (!isProviderSupportedForMode(defaultPackageName, mode)) {
-      if (mode === 'text') {
-        assertSupportedPackageName(defaultPackageName, `Provider "${providerId}"`, mode)
-      }
-
+    if (mode === 'text' && !defaultSupportedLoadModes.includes('text')) {
+      assertSupportedPackageName(defaultPackageName, `Provider "${providerId}"`, mode)
       continue
     }
 
@@ -427,8 +428,6 @@ export function createGeneratedCatalogFromProvidersDir(
           } satisfies GeneratedTranscriptionProvider)
     const defaultApi = provider.api
 
-    packageNames.add(provider.packageName)
-
     for (const relativePath of listModelTomlFiles(modelsDir)) {
       const modelId = normalizeModelId(relativePath)
       const rawModel = options.parseToml(
@@ -445,27 +444,43 @@ export function createGeneratedCatalogFromProvidersDir(
         continue
       }
 
-      if (!supportsPackageMode(model.packageName, mode)) {
-        if (mode === 'text') {
+      if (mode === 'text') {
+        if (!supportsPackageMode(model.packageName, mode)) {
           assertSupportedPackageName(model.packageName, `Model "${providerId}/${modelId}"`, mode)
+          continue
         }
 
-        continue
-      }
-
-      if (mode === 'text') {
         validateModelAdapter(mode, provider, model)
         ;(provider as GeneratedTextProvider).models[modelId] = model
+        packageNames.add(model.packageName)
       } else {
         const transcriptionModel = createTranscriptionModel(model)
-        validateModelAdapter(mode, provider, transcriptionModel)
-        ;(provider as GeneratedTranscriptionProvider).models[modelId] = transcriptionModel
-      }
 
-      packageNames.add(model.packageName)
+        if (transcriptionModel.supportedLoadModes.length === 0) {
+          continue
+        }
+
+        ;(provider as GeneratedTranscriptionProvider).models[modelId] = transcriptionModel
+        packageNames.add(model.packageName)
+      }
     }
 
-    providers[providerId] = provider
+    if (mode === 'text') {
+      packageNames.add(provider.packageName)
+      providers[providerId] = provider
+      continue
+    }
+
+    if (
+      defaultSupportedLoadModes.length > 0 ||
+      Object.keys((provider as GeneratedTranscriptionProvider).models).length > 0
+    ) {
+      if (defaultSupportedLoadModes.length > 0) {
+        packageNames.add(provider.packageName)
+      }
+
+      providers[providerId] = provider
+    }
   }
 
   return {
@@ -522,7 +537,8 @@ export function renderCatalogModule(
           ' *',
           ' * The catalog is committed to the repository and contains only models whose',
           ' * declared input modalities include `audio`, whose output modalities include',
-          ' * `text`, and whose package has a configured transcription adapter.',
+          ' * `text`, and whose package supports at least one runtime load mode in this',
+          ' * library.',
           ' */',
         ]
 

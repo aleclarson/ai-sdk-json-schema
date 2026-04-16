@@ -35,6 +35,7 @@ export interface ModelDescriptor extends ModelConfig {
   env: readonly string[];
   catalogMatch: boolean;
   name: string;
+  supportedLoadModes: readonly ModelMode[];
   family?: string;
   attachment?: boolean;
   reasoning?: boolean;
@@ -95,7 +96,7 @@ export interface UnresolvedModelLoadPlan {
 export type JsonSchemaObject = Record<string, unknown>;
 export type ModelLoadArgument = ModelBindingArgument | ModelValueArgument;
 export type ModelLoadOperation = ModelCreateBindingOperation | ModelInvokeBindingOperation;
-export type ModelMode = 'text' | 'transcription';
+export type ModelMode = SupportedLoadMode;
 
 // Classes
 export declare class AdapterConfigurationError extends Error {

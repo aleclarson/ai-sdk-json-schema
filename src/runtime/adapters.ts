@@ -45,6 +45,7 @@ const BUILD_METHOD_BY_MODE = {
   text: 'buildTextPlan',
   transcription: 'buildTranscriptionPlan',
 } as const satisfies Record<ModelMode, keyof ModelAdapter>
+const MODEL_MODES = ['text', 'transcription'] as const satisfies readonly ModelMode[]
 
 const PACKAGES_WITH_BASE_URL = new Set([
   '@ai-sdk/alibaba',
@@ -430,6 +431,10 @@ export const SUPPORTED_PACKAGE_NAMES_BY_MODE = Object.freeze({
 
 export function getSupportedPackageNames(mode: ModelMode): readonly string[] {
   return SUPPORTED_PACKAGE_NAMES_BY_MODE[mode]
+}
+
+export function getSupportedLoadModes(packageName: string): readonly ModelMode[] {
+  return MODEL_MODES.filter((mode) => SUPPORTED_PACKAGE_NAMES_BY_MODE[mode].includes(packageName))
 }
 
 export function supportsPackageMode(packageName: string, mode: ModelMode): boolean {

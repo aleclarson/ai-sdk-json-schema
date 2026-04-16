@@ -11,21 +11,119 @@ import type { GeneratedTranscriptionCatalog } from '../internal/catalog-types'
  *
  * The catalog is committed to the repository and contains only models whose
  * declared input modalities include `audio`, whose output modalities include
- * `text`, and whose package has a configured transcription adapter.
+ * `text`, and whose package supports at least one runtime load mode in this
+ * library.
  */
 export const transcriptionModelCatalog: GeneratedTranscriptionCatalog = {
   "source": {
     "repo": "anomalyco/models.dev",
     "ref": "dev",
-    "generatedAt": "2026-04-16T14:36:22.889Z"
+    "generatedAt": "2026-04-16T19:59:34.043Z"
   },
   "packageNames": [
+    "@ai-sdk/amazon-bedrock",
+    "@ai-sdk/anthropic",
     "@ai-sdk/azure",
+    "@ai-sdk/cerebras",
+    "@ai-sdk/cohere",
+    "@ai-sdk/deepinfra",
+    "@ai-sdk/gateway",
+    "@ai-sdk/google",
+    "@ai-sdk/google-vertex",
+    "@ai-sdk/google-vertex/anthropic",
     "@ai-sdk/groq",
+    "@ai-sdk/mistral",
     "@ai-sdk/openai",
-    "@aihubmix/ai-sdk-provider"
+    "@ai-sdk/openai-compatible",
+    "@ai-sdk/perplexity",
+    "@ai-sdk/togetherai",
+    "@ai-sdk/vercel",
+    "@ai-sdk/xai",
+    "@aihubmix/ai-sdk-provider",
+    "@jerome-benoit/sap-ai-provider-v2",
+    "@openrouter/ai-sdk-provider",
+    "ai-gateway-provider",
+    "gitlab-ai-provider",
+    "venice-ai-sdk-provider"
   ],
   "providers": {
+    "302ai": {
+      "id": "302ai",
+      "name": "302.AI",
+      "doc": "https://doc.302.ai",
+      "env": [
+        "302AI_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.302.ai/v1",
+      "models": {}
+    },
+    "abacus": {
+      "id": "abacus",
+      "name": "Abacus",
+      "doc": "https://abacus.ai/help/api",
+      "env": [
+        "ABACUS_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://routellm.abacus.ai/v1",
+      "models": {
+        "gemini-2.5-flash": {
+          "id": "gemini-2.5-flash",
+          "name": "Gemini 2.5 Flash",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://routellm.abacus.ai/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-pro": {
+          "id": "gemini-2.5-pro",
+          "name": "Gemini 2.5 Pro",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://routellm.abacus.ai/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3-flash-preview": {
+          "id": "gemini-3-flash-preview",
+          "name": "Gemini 3 Flash Preview",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://routellm.abacus.ai/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3.1-flash-lite-preview": {
+          "id": "gemini-3.1-flash-lite-preview",
+          "name": "Gemini 3.1 Flash Lite Preview",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://routellm.abacus.ai/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3.1-pro-preview": {
+          "id": "gemini-3.1-pro-preview",
+          "name": "Gemini 3.1 Pro Preview",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://routellm.abacus.ai/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gpt-4o-2024-11-20": {
+          "id": "gpt-4o-2024-11-20",
+          "name": "GPT-4o (2024-11-20)",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://routellm.abacus.ai/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
     "aihubmix": {
       "id": "aihubmix",
       "name": "AIHubMix",
@@ -38,24 +136,243 @@ export const transcriptionModelCatalog: GeneratedTranscriptionCatalog = {
         "gemini-2.5-flash": {
           "id": "gemini-2.5-flash",
           "name": "Gemini 2.5 Flash",
-          "packageName": "@aihubmix/ai-sdk-provider"
+          "packageName": "@aihubmix/ai-sdk-provider",
+          "supportedLoadModes": [
+            "text",
+            "transcription"
+          ]
         },
         "gemini-2.5-pro": {
           "id": "gemini-2.5-pro",
           "name": "Gemini 2.5 Pro",
-          "packageName": "@aihubmix/ai-sdk-provider"
+          "packageName": "@aihubmix/ai-sdk-provider",
+          "supportedLoadModes": [
+            "text",
+            "transcription"
+          ]
         },
         "gemini-3-pro-preview-search": {
           "id": "gemini-3-pro-preview-search",
           "name": "Gemini 3 Pro Preview Search",
-          "packageName": "@aihubmix/ai-sdk-provider"
+          "packageName": "@aihubmix/ai-sdk-provider",
+          "supportedLoadModes": [
+            "text",
+            "transcription"
+          ]
         },
         "gemini-3-pro-preview": {
           "id": "gemini-3-pro-preview",
           "name": "Gemini 3 Pro Preview",
-          "packageName": "@aihubmix/ai-sdk-provider"
+          "packageName": "@aihubmix/ai-sdk-provider",
+          "supportedLoadModes": [
+            "text",
+            "transcription"
+          ]
         }
       }
+    },
+    "alibaba": {
+      "id": "alibaba",
+      "name": "Alibaba",
+      "doc": "https://www.alibabacloud.com/help/en/model-studio/models",
+      "env": [
+        "DASHSCOPE_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+      "models": {
+        "qwen-omni-turbo-realtime": {
+          "id": "qwen-omni-turbo-realtime",
+          "name": "Qwen-Omni Turbo Realtime",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "qwen-omni-turbo": {
+          "id": "qwen-omni-turbo",
+          "name": "Qwen-Omni Turbo",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "qwen2-5-omni-7b": {
+          "id": "qwen2-5-omni-7b",
+          "name": "Qwen2.5-Omni 7B",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "qwen3-asr-flash": {
+          "id": "qwen3-asr-flash",
+          "name": "Qwen3-ASR Flash",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "qwen3-livetranslate-flash-realtime": {
+          "id": "qwen3-livetranslate-flash-realtime",
+          "name": "Qwen3-LiveTranslate Flash Realtime",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "qwen3-omni-flash-realtime": {
+          "id": "qwen3-omni-flash-realtime",
+          "name": "Qwen3-Omni Flash Realtime",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "qwen3-omni-flash": {
+          "id": "qwen3-omni-flash",
+          "name": "Qwen3-Omni Flash",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "alibaba-cn": {
+      "id": "alibaba-cn",
+      "name": "Alibaba (China)",
+      "doc": "https://www.alibabacloud.com/help/en/model-studio/models",
+      "env": [
+        "DASHSCOPE_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "models": {
+        "qwen-omni-turbo-realtime": {
+          "id": "qwen-omni-turbo-realtime",
+          "name": "Qwen-Omni Turbo Realtime",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "qwen-omni-turbo": {
+          "id": "qwen-omni-turbo",
+          "name": "Qwen-Omni Turbo",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "qwen2-5-omni-7b": {
+          "id": "qwen2-5-omni-7b",
+          "name": "Qwen2.5-Omni 7B",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "qwen3-asr-flash": {
+          "id": "qwen3-asr-flash",
+          "name": "Qwen3-ASR Flash",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "qwen3-omni-flash-realtime": {
+          "id": "qwen3-omni-flash-realtime",
+          "name": "Qwen3-Omni Flash Realtime",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "qwen3-omni-flash": {
+          "id": "qwen3-omni-flash",
+          "name": "Qwen3-Omni Flash",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "alibaba-coding-plan": {
+      "id": "alibaba-coding-plan",
+      "name": "Alibaba Coding Plan",
+      "doc": "https://www.alibabacloud.com/help/en/model-studio/coding-plan",
+      "env": [
+        "ALIBABA_CODING_PLAN_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://coding-intl.dashscope.aliyuncs.com/v1",
+      "models": {}
+    },
+    "alibaba-coding-plan-cn": {
+      "id": "alibaba-coding-plan-cn",
+      "name": "Alibaba Coding Plan (China)",
+      "doc": "https://help.aliyun.com/zh/model-studio/coding-plan",
+      "env": [
+        "ALIBABA_CODING_PLAN_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://coding.dashscope.aliyuncs.com/v1",
+      "models": {}
+    },
+    "amazon-bedrock": {
+      "id": "amazon-bedrock",
+      "name": "Amazon Bedrock",
+      "doc": "https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html",
+      "env": [
+        "AWS_ACCESS_KEY_ID",
+        "AWS_SECRET_ACCESS_KEY",
+        "AWS_REGION",
+        "AWS_BEARER_TOKEN_BEDROCK"
+      ],
+      "packageName": "@ai-sdk/amazon-bedrock",
+      "models": {
+        "mistral.voxtral-mini-3b-2507": {
+          "id": "mistral.voxtral-mini-3b-2507",
+          "name": "Voxtral Mini 3B 2507",
+          "packageName": "@ai-sdk/amazon-bedrock",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "mistral.voxtral-small-24b-2507": {
+          "id": "mistral.voxtral-small-24b-2507",
+          "name": "Voxtral Small 24B 2507",
+          "packageName": "@ai-sdk/amazon-bedrock",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "anthropic": {
+      "id": "anthropic",
+      "name": "Anthropic",
+      "doc": "https://docs.anthropic.com/en/docs/about-claude/models",
+      "env": [
+        "ANTHROPIC_API_KEY"
+      ],
+      "packageName": "@ai-sdk/anthropic",
+      "models": {}
     },
     "azure": {
       "id": "azure",
@@ -70,22 +387,38 @@ export const transcriptionModelCatalog: GeneratedTranscriptionCatalog = {
         "gpt-5.1-chat": {
           "id": "gpt-5.1-chat",
           "name": "GPT-5.1 Chat",
-          "packageName": "@ai-sdk/azure"
+          "packageName": "@ai-sdk/azure",
+          "supportedLoadModes": [
+            "text",
+            "transcription"
+          ]
         },
         "gpt-5.1-codex": {
           "id": "gpt-5.1-codex",
           "name": "GPT-5.1 Codex",
-          "packageName": "@ai-sdk/azure"
+          "packageName": "@ai-sdk/azure",
+          "supportedLoadModes": [
+            "text",
+            "transcription"
+          ]
         },
         "gpt-5.1": {
           "id": "gpt-5.1",
           "name": "GPT-5.1",
-          "packageName": "@ai-sdk/azure"
+          "packageName": "@ai-sdk/azure",
+          "supportedLoadModes": [
+            "text",
+            "transcription"
+          ]
         },
         "phi-4-multimodal": {
           "id": "phi-4-multimodal",
           "name": "Phi-4-multimodal",
-          "packageName": "@ai-sdk/azure"
+          "packageName": "@ai-sdk/azure",
+          "supportedLoadModes": [
+            "text",
+            "transcription"
+          ]
         }
       }
     },
@@ -100,6 +433,780 @@ export const transcriptionModelCatalog: GeneratedTranscriptionCatalog = {
       "packageName": "@ai-sdk/azure",
       "models": {}
     },
+    "bailing": {
+      "id": "bailing",
+      "name": "Bailing",
+      "doc": "https://alipaytbox.yuque.com/sxs0ba/ling/intro",
+      "env": [
+        "BAILING_API_TOKEN"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.tbox.cn/api/llm/v1/chat/completions",
+      "models": {}
+    },
+    "baseten": {
+      "id": "baseten",
+      "name": "Baseten",
+      "doc": "https://docs.baseten.co/development/model-apis/overview",
+      "env": [
+        "BASETEN_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://inference.baseten.co/v1",
+      "models": {}
+    },
+    "berget": {
+      "id": "berget",
+      "name": "Berget.AI",
+      "doc": "https://api.berget.ai",
+      "env": [
+        "BERGET_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.berget.ai/v1",
+      "models": {
+        "KBLab/kb-whisper-large": {
+          "id": "KBLab/kb-whisper-large",
+          "name": "KB-Whisper-Large",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.berget.ai/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "cerebras": {
+      "id": "cerebras",
+      "name": "Cerebras",
+      "doc": "https://inference-docs.cerebras.ai/models/overview",
+      "env": [
+        "CEREBRAS_API_KEY"
+      ],
+      "packageName": "@ai-sdk/cerebras",
+      "models": {}
+    },
+    "chutes": {
+      "id": "chutes",
+      "name": "Chutes",
+      "doc": "https://llm.chutes.ai/v1/models",
+      "env": [
+        "CHUTES_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://llm.chutes.ai/v1",
+      "models": {}
+    },
+    "clarifai": {
+      "id": "clarifai",
+      "name": "Clarifai",
+      "doc": "https://docs.clarifai.com/compute/inference/",
+      "env": [
+        "CLARIFAI_PAT"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.clarifai.com/v2/ext/openai/v1",
+      "models": {}
+    },
+    "cloudferro-sherlock": {
+      "id": "cloudferro-sherlock",
+      "name": "CloudFerro Sherlock",
+      "doc": "https://docs.sherlock.cloudferro.com/",
+      "env": [
+        "CLOUDFERRO_SHERLOCK_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api-sherlock.cloudferro.com/openai/v1/",
+      "models": {}
+    },
+    "cloudflare-ai-gateway": {
+      "id": "cloudflare-ai-gateway",
+      "name": "Cloudflare AI Gateway",
+      "doc": "https://developers.cloudflare.com/ai-gateway/",
+      "env": [
+        "CLOUDFLARE_API_TOKEN",
+        "CLOUDFLARE_ACCOUNT_ID",
+        "CLOUDFLARE_GATEWAY_ID"
+      ],
+      "packageName": "ai-gateway-provider",
+      "models": {}
+    },
+    "cloudflare-workers-ai": {
+      "id": "cloudflare-workers-ai",
+      "name": "Cloudflare Workers AI",
+      "doc": "https://developers.cloudflare.com/workers-ai/models/",
+      "env": [
+        "CLOUDFLARE_ACCOUNT_ID",
+        "CLOUDFLARE_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/v1",
+      "models": {}
+    },
+    "cohere": {
+      "id": "cohere",
+      "name": "Cohere",
+      "doc": "https://docs.cohere.com/docs/models",
+      "env": [
+        "COHERE_API_KEY"
+      ],
+      "packageName": "@ai-sdk/cohere",
+      "models": {}
+    },
+    "cortecs": {
+      "id": "cortecs",
+      "name": "Cortecs",
+      "doc": "https://api.cortecs.ai/v1/models",
+      "env": [
+        "CORTECS_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.cortecs.ai/v1",
+      "models": {}
+    },
+    "deepinfra": {
+      "id": "deepinfra",
+      "name": "Deep Infra",
+      "doc": "https://deepinfra.com/models",
+      "env": [
+        "DEEPINFRA_API_KEY"
+      ],
+      "packageName": "@ai-sdk/deepinfra",
+      "models": {}
+    },
+    "deepseek": {
+      "id": "deepseek",
+      "name": "DeepSeek",
+      "doc": "https://api-docs.deepseek.com/quick_start/pricing",
+      "env": [
+        "DEEPSEEK_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.deepseek.com",
+      "models": {}
+    },
+    "dinference": {
+      "id": "dinference",
+      "name": "DInference",
+      "doc": "https://dinference.com",
+      "env": [
+        "DINFERENCE_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.dinference.com/v1",
+      "models": {}
+    },
+    "drun": {
+      "id": "drun",
+      "name": "D.Run (China)",
+      "doc": "https://www.d.run",
+      "env": [
+        "DRUN_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://chat.d.run/v1",
+      "models": {}
+    },
+    "evroc": {
+      "id": "evroc",
+      "name": "evroc",
+      "doc": "https://docs.evroc.com/products/think/overview.html",
+      "env": [
+        "EVROC_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://models.think.evroc.com/v1",
+      "models": {
+        "KBLab/kb-whisper-large": {
+          "id": "KBLab/kb-whisper-large",
+          "name": "KB Whisper",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://models.think.evroc.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "mistralai/Voxtral-Small-24B-2507": {
+          "id": "mistralai/Voxtral-Small-24B-2507",
+          "name": "Voxtral Small 24B",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://models.think.evroc.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "openai/whisper-large-v3": {
+          "id": "openai/whisper-large-v3",
+          "name": "Whisper 3 Large",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://models.think.evroc.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "fastrouter": {
+      "id": "fastrouter",
+      "name": "FastRouter",
+      "doc": "https://fastrouter.ai/models",
+      "env": [
+        "FASTROUTER_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://go.fastrouter.ai/api/v1",
+      "models": {}
+    },
+    "fireworks-ai": {
+      "id": "fireworks-ai",
+      "name": "Fireworks AI",
+      "doc": "https://fireworks.ai/docs/",
+      "env": [
+        "FIREWORKS_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.fireworks.ai/inference/v1/",
+      "models": {}
+    },
+    "firmware": {
+      "id": "firmware",
+      "name": "Firmware",
+      "doc": "https://docs.frogbot.ai",
+      "env": [
+        "FIRMWARE_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://app.frogbot.ai/api/v1",
+      "models": {
+        "gemini-2.5-flash": {
+          "id": "gemini-2.5-flash",
+          "name": "Gemini 2.5 Flash",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://app.frogbot.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-pro": {
+          "id": "gemini-2.5-pro",
+          "name": "Gemini 2.5 Pro",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://app.frogbot.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3-1-pro-preview": {
+          "id": "gemini-3-1-pro-preview",
+          "name": "Gemini 3.1 Pro Preview",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://app.frogbot.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3-flash-preview": {
+          "id": "gemini-3-flash-preview",
+          "name": "Gemini 3 Flash Preview",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://app.frogbot.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3-pro-preview": {
+          "id": "gemini-3-pro-preview",
+          "name": "Gemini 3 Pro Preview",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://app.frogbot.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "friendli": {
+      "id": "friendli",
+      "name": "Friendli",
+      "doc": "https://friendli.ai/docs/guides/serverless_endpoints/introduction",
+      "env": [
+        "FRIENDLI_TOKEN"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.friendli.ai/serverless/v1",
+      "models": {}
+    },
+    "github-copilot": {
+      "id": "github-copilot",
+      "name": "GitHub Copilot",
+      "doc": "https://docs.github.com/en/copilot",
+      "env": [
+        "GITHUB_TOKEN"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.githubcopilot.com",
+      "models": {
+        "gemini-2.5-pro": {
+          "id": "gemini-2.5-pro",
+          "name": "Gemini 2.5 Pro",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.githubcopilot.com",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3-flash-preview": {
+          "id": "gemini-3-flash-preview",
+          "name": "Gemini 3 Flash",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.githubcopilot.com",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3-pro-preview": {
+          "id": "gemini-3-pro-preview",
+          "name": "Gemini 3 Pro Preview",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.githubcopilot.com",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "github-models": {
+      "id": "github-models",
+      "name": "GitHub Models",
+      "doc": "https://docs.github.com/en/github-models",
+      "env": [
+        "GITHUB_TOKEN"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://models.github.ai/inference",
+      "models": {
+        "meta/llama-3.2-11b-vision-instruct": {
+          "id": "meta/llama-3.2-11b-vision-instruct",
+          "name": "Llama-3.2-11B-Vision-Instruct",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://models.github.ai/inference",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "meta/llama-3.2-90b-vision-instruct": {
+          "id": "meta/llama-3.2-90b-vision-instruct",
+          "name": "Llama-3.2-90B-Vision-Instruct",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://models.github.ai/inference",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "microsoft/phi-4-multimodal-instruct": {
+          "id": "microsoft/phi-4-multimodal-instruct",
+          "name": "Phi-4-multimodal-instruct",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://models.github.ai/inference",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "openai/gpt-4o-mini": {
+          "id": "openai/gpt-4o-mini",
+          "name": "GPT-4o mini",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://models.github.ai/inference",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "openai/gpt-4o": {
+          "id": "openai/gpt-4o",
+          "name": "GPT-4o",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://models.github.ai/inference",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "gitlab": {
+      "id": "gitlab",
+      "name": "GitLab Duo",
+      "doc": "https://docs.gitlab.com/user/duo_agent_platform/",
+      "env": [
+        "GITLAB_TOKEN"
+      ],
+      "packageName": "gitlab-ai-provider",
+      "models": {}
+    },
+    "google": {
+      "id": "google",
+      "name": "Google",
+      "doc": "https://ai.google.dev/gemini-api/docs/pricing",
+      "env": [
+        "GOOGLE_GENERATIVE_AI_API_KEY",
+        "GEMINI_API_KEY"
+      ],
+      "packageName": "@ai-sdk/google",
+      "models": {
+        "gemini-1.5-flash-8b": {
+          "id": "gemini-1.5-flash-8b",
+          "name": "Gemini 1.5 Flash-8B",
+          "packageName": "@ai-sdk/google",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-1.5-flash": {
+          "id": "gemini-1.5-flash",
+          "name": "Gemini 1.5 Flash",
+          "packageName": "@ai-sdk/google",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.0-flash-lite": {
+          "id": "gemini-2.0-flash-lite",
+          "name": "Gemini 2.0 Flash Lite",
+          "packageName": "@ai-sdk/google",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.0-flash": {
+          "id": "gemini-2.0-flash",
+          "name": "Gemini 2.0 Flash",
+          "packageName": "@ai-sdk/google",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-flash-lite-preview-06-17": {
+          "id": "gemini-2.5-flash-lite-preview-06-17",
+          "name": "Gemini 2.5 Flash Lite Preview 06-17",
+          "packageName": "@ai-sdk/google",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-flash-lite-preview-09-2025": {
+          "id": "gemini-2.5-flash-lite-preview-09-2025",
+          "name": "Gemini 2.5 Flash Lite Preview 09-25",
+          "packageName": "@ai-sdk/google",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-flash-lite": {
+          "id": "gemini-2.5-flash-lite",
+          "name": "Gemini 2.5 Flash Lite",
+          "packageName": "@ai-sdk/google",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-flash-preview-04-17": {
+          "id": "gemini-2.5-flash-preview-04-17",
+          "name": "Gemini 2.5 Flash Preview 04-17",
+          "packageName": "@ai-sdk/google",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-flash-preview-05-20": {
+          "id": "gemini-2.5-flash-preview-05-20",
+          "name": "Gemini 2.5 Flash Preview 05-20",
+          "packageName": "@ai-sdk/google",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-flash-preview-09-2025": {
+          "id": "gemini-2.5-flash-preview-09-2025",
+          "name": "Gemini 2.5 Flash Preview 09-25",
+          "packageName": "@ai-sdk/google",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-flash": {
+          "id": "gemini-2.5-flash",
+          "name": "Gemini 2.5 Flash",
+          "packageName": "@ai-sdk/google",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-pro-preview-05-06": {
+          "id": "gemini-2.5-pro-preview-05-06",
+          "name": "Gemini 2.5 Pro Preview 05-06",
+          "packageName": "@ai-sdk/google",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-pro-preview-06-05": {
+          "id": "gemini-2.5-pro-preview-06-05",
+          "name": "Gemini 2.5 Pro Preview 06-05",
+          "packageName": "@ai-sdk/google",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-pro": {
+          "id": "gemini-2.5-pro",
+          "name": "Gemini 2.5 Pro",
+          "packageName": "@ai-sdk/google",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3-flash-preview": {
+          "id": "gemini-3-flash-preview",
+          "name": "Gemini 3 Flash Preview",
+          "packageName": "@ai-sdk/google",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3-pro-preview": {
+          "id": "gemini-3-pro-preview",
+          "name": "Gemini 3 Pro Preview",
+          "packageName": "@ai-sdk/google",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3.1-flash-lite-preview": {
+          "id": "gemini-3.1-flash-lite-preview",
+          "name": "Gemini 3.1 Flash Lite Preview",
+          "packageName": "@ai-sdk/google",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3.1-pro-preview-customtools": {
+          "id": "gemini-3.1-pro-preview-customtools",
+          "name": "Gemini 3.1 Pro Preview Custom Tools",
+          "packageName": "@ai-sdk/google",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3.1-pro-preview": {
+          "id": "gemini-3.1-pro-preview",
+          "name": "Gemini 3.1 Pro Preview",
+          "packageName": "@ai-sdk/google",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-flash-latest": {
+          "id": "gemini-flash-latest",
+          "name": "Gemini Flash Latest",
+          "packageName": "@ai-sdk/google",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-flash-lite-latest": {
+          "id": "gemini-flash-lite-latest",
+          "name": "Gemini Flash-Lite Latest",
+          "packageName": "@ai-sdk/google",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-live-2.5-flash-preview-native-audio": {
+          "id": "gemini-live-2.5-flash-preview-native-audio",
+          "name": "Gemini Live 2.5 Flash Preview Native Audio",
+          "packageName": "@ai-sdk/google",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-live-2.5-flash": {
+          "id": "gemini-live-2.5-flash",
+          "name": "Gemini Live 2.5 Flash",
+          "packageName": "@ai-sdk/google",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "google-vertex": {
+      "id": "google-vertex",
+      "name": "Vertex",
+      "doc": "https://cloud.google.com/vertex-ai/generative-ai/docs/models",
+      "env": [
+        "GOOGLE_VERTEX_PROJECT",
+        "GOOGLE_VERTEX_LOCATION",
+        "GOOGLE_APPLICATION_CREDENTIALS"
+      ],
+      "packageName": "@ai-sdk/google-vertex",
+      "models": {
+        "gemini-2.0-flash-lite": {
+          "id": "gemini-2.0-flash-lite",
+          "name": "Gemini 2.0 Flash Lite",
+          "packageName": "@ai-sdk/google-vertex",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.0-flash": {
+          "id": "gemini-2.0-flash",
+          "name": "Gemini 2.0 Flash",
+          "packageName": "@ai-sdk/google-vertex",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-flash-lite-preview-06-17": {
+          "id": "gemini-2.5-flash-lite-preview-06-17",
+          "name": "Gemini 2.5 Flash Lite Preview 06-17",
+          "packageName": "@ai-sdk/google-vertex",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-flash-lite-preview-09-2025": {
+          "id": "gemini-2.5-flash-lite-preview-09-2025",
+          "name": "Gemini 2.5 Flash Lite Preview 09-25",
+          "packageName": "@ai-sdk/google-vertex",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-flash-lite": {
+          "id": "gemini-2.5-flash-lite",
+          "name": "Gemini 2.5 Flash Lite",
+          "packageName": "@ai-sdk/google-vertex",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-flash-preview-04-17": {
+          "id": "gemini-2.5-flash-preview-04-17",
+          "name": "Gemini 2.5 Flash Preview 04-17",
+          "packageName": "@ai-sdk/google-vertex",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-flash-preview-05-20": {
+          "id": "gemini-2.5-flash-preview-05-20",
+          "name": "Gemini 2.5 Flash Preview 05-20",
+          "packageName": "@ai-sdk/google-vertex",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-flash-preview-09-2025": {
+          "id": "gemini-2.5-flash-preview-09-2025",
+          "name": "Gemini 2.5 Flash Preview 09-25",
+          "packageName": "@ai-sdk/google-vertex",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-flash": {
+          "id": "gemini-2.5-flash",
+          "name": "Gemini 2.5 Flash",
+          "packageName": "@ai-sdk/google-vertex",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-pro-preview-05-06": {
+          "id": "gemini-2.5-pro-preview-05-06",
+          "name": "Gemini 2.5 Pro Preview 05-06",
+          "packageName": "@ai-sdk/google-vertex",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-pro-preview-06-05": {
+          "id": "gemini-2.5-pro-preview-06-05",
+          "name": "Gemini 2.5 Pro Preview 06-05",
+          "packageName": "@ai-sdk/google-vertex",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-pro": {
+          "id": "gemini-2.5-pro",
+          "name": "Gemini 2.5 Pro",
+          "packageName": "@ai-sdk/google-vertex",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3-flash-preview": {
+          "id": "gemini-3-flash-preview",
+          "name": "Gemini 3 Flash Preview",
+          "packageName": "@ai-sdk/google-vertex",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3-pro-preview": {
+          "id": "gemini-3-pro-preview",
+          "name": "Gemini 3 Pro Preview",
+          "packageName": "@ai-sdk/google-vertex",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3.1-pro-preview-customtools": {
+          "id": "gemini-3.1-pro-preview-customtools",
+          "name": "Gemini 3.1 Pro Preview Custom Tools",
+          "packageName": "@ai-sdk/google-vertex",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3.1-pro-preview": {
+          "id": "gemini-3.1-pro-preview",
+          "name": "Gemini 3.1 Pro Preview",
+          "packageName": "@ai-sdk/google-vertex",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-flash-latest": {
+          "id": "gemini-flash-latest",
+          "name": "Gemini Flash Latest",
+          "packageName": "@ai-sdk/google-vertex",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-flash-lite-latest": {
+          "id": "gemini-flash-lite-latest",
+          "name": "Gemini Flash-Lite Latest",
+          "packageName": "@ai-sdk/google-vertex",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "google-vertex-anthropic": {
+      "id": "google-vertex-anthropic",
+      "name": "Vertex (Anthropic)",
+      "doc": "https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/claude",
+      "env": [
+        "GOOGLE_VERTEX_PROJECT",
+        "GOOGLE_VERTEX_LOCATION",
+        "GOOGLE_APPLICATION_CREDENTIALS"
+      ],
+      "packageName": "@ai-sdk/google-vertex/anthropic",
+      "models": {}
+    },
     "groq": {
       "id": "groq",
       "name": "Groq",
@@ -112,14 +1219,704 @@ export const transcriptionModelCatalog: GeneratedTranscriptionCatalog = {
         "whisper-large-v3-turbo": {
           "id": "whisper-large-v3-turbo",
           "name": "Whisper Large v3 Turbo",
-          "packageName": "@ai-sdk/groq"
+          "packageName": "@ai-sdk/groq",
+          "supportedLoadModes": [
+            "text",
+            "transcription"
+          ]
         },
         "whisper-large-v3": {
           "id": "whisper-large-v3",
           "name": "Whisper Large V3",
-          "packageName": "@ai-sdk/groq"
+          "packageName": "@ai-sdk/groq",
+          "supportedLoadModes": [
+            "text",
+            "transcription"
+          ]
         }
       }
+    },
+    "helicone": {
+      "id": "helicone",
+      "name": "Helicone",
+      "doc": "https://helicone.ai/models",
+      "env": [
+        "HELICONE_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://ai-gateway.helicone.ai/v1",
+      "models": {
+        "gemini-3-pro-preview": {
+          "id": "gemini-3-pro-preview",
+          "name": "Google Gemini 3 Pro Preview",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://ai-gateway.helicone.ai/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "grok-4-fast-non-reasoning": {
+          "id": "grok-4-fast-non-reasoning",
+          "name": "xAI Grok 4 Fast Non-Reasoning",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://ai-gateway.helicone.ai/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "qwen3-coder": {
+          "id": "qwen3-coder",
+          "name": "Qwen3 Coder 480B A35B Instruct Turbo",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://ai-gateway.helicone.ai/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "hpc-ai": {
+      "id": "hpc-ai",
+      "name": "HPC-AI",
+      "doc": "https://www.hpc-ai.com/doc/docs/quickstart/",
+      "env": [
+        "HPC_AI_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.hpc-ai.com/inference/v1",
+      "models": {}
+    },
+    "huggingface": {
+      "id": "huggingface",
+      "name": "Hugging Face",
+      "doc": "https://huggingface.co/docs/inference-providers",
+      "env": [
+        "HF_TOKEN"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://router.huggingface.co/v1",
+      "models": {}
+    },
+    "iflowcn": {
+      "id": "iflowcn",
+      "name": "iFlow",
+      "doc": "https://platform.iflow.cn/en/docs",
+      "env": [
+        "IFLOW_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://apis.iflow.cn/v1",
+      "models": {}
+    },
+    "inception": {
+      "id": "inception",
+      "name": "Inception",
+      "doc": "https://platform.inceptionlabs.ai/docs",
+      "env": [
+        "INCEPTION_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.inceptionlabs.ai/v1/",
+      "models": {}
+    },
+    "inference": {
+      "id": "inference",
+      "name": "Inference",
+      "doc": "https://inference.net/models",
+      "env": [
+        "INFERENCE_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://inference.net/v1",
+      "models": {}
+    },
+    "io-net": {
+      "id": "io-net",
+      "name": "IO.NET",
+      "doc": "https://io.net/docs/guides/intelligence/io-intelligence",
+      "env": [
+        "IOINTELLIGENCE_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.intelligence.io.solutions/api/v1",
+      "models": {}
+    },
+    "jiekou": {
+      "id": "jiekou",
+      "name": "Jiekou.AI",
+      "doc": "https://docs.jiekou.ai/docs/support/quickstart?utm_source=github_models.dev",
+      "env": [
+        "JIEKOU_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.jiekou.ai/openai",
+      "models": {
+        "gemini-2.5-flash-lite-preview-06-17": {
+          "id": "gemini-2.5-flash-lite-preview-06-17",
+          "name": "gemini-2.5-flash-lite-preview-06-17",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.jiekou.ai/openai",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-flash-lite-preview-09-2025": {
+          "id": "gemini-2.5-flash-lite-preview-09-2025",
+          "name": "gemini-2.5-flash-lite-preview-09-2025",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.jiekou.ai/openai",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-flash-lite": {
+          "id": "gemini-2.5-flash-lite",
+          "name": "gemini-2.5-flash-lite",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.jiekou.ai/openai",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-flash-preview-05-20": {
+          "id": "gemini-2.5-flash-preview-05-20",
+          "name": "gemini-2.5-flash-preview-05-20",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.jiekou.ai/openai",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-flash": {
+          "id": "gemini-2.5-flash",
+          "name": "gemini-2.5-flash",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.jiekou.ai/openai",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-pro-preview-06-05": {
+          "id": "gemini-2.5-pro-preview-06-05",
+          "name": "gemini-2.5-pro-preview-06-05",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.jiekou.ai/openai",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-pro": {
+          "id": "gemini-2.5-pro",
+          "name": "gemini-2.5-pro",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.jiekou.ai/openai",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3-flash-preview": {
+          "id": "gemini-3-flash-preview",
+          "name": "gemini-3-flash-preview",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.jiekou.ai/openai",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3-pro-preview": {
+          "id": "gemini-3-pro-preview",
+          "name": "gemini-3-pro-preview",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.jiekou.ai/openai",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "kilo": {
+      "id": "kilo",
+      "name": "Kilo Gateway",
+      "doc": "https://kilo.ai",
+      "env": [
+        "KILO_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.kilo.ai/api/gateway",
+      "models": {
+        "google/gemini-2.0-flash-001": {
+          "id": "google/gemini-2.0-flash-001",
+          "name": "Google: Gemini 2.0 Flash",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.kilo.ai/api/gateway",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-2.0-flash-lite-001": {
+          "id": "google/gemini-2.0-flash-lite-001",
+          "name": "Google: Gemini 2.0 Flash Lite",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.kilo.ai/api/gateway",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-2.5-flash-lite-preview-09-2025": {
+          "id": "google/gemini-2.5-flash-lite-preview-09-2025",
+          "name": "Google: Gemini 2.5 Flash Lite Preview 09-2025",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.kilo.ai/api/gateway",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-2.5-flash-lite": {
+          "id": "google/gemini-2.5-flash-lite",
+          "name": "Google: Gemini 2.5 Flash Lite",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.kilo.ai/api/gateway",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-2.5-flash": {
+          "id": "google/gemini-2.5-flash",
+          "name": "Google: Gemini 2.5 Flash",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.kilo.ai/api/gateway",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-2.5-pro-preview-05-06": {
+          "id": "google/gemini-2.5-pro-preview-05-06",
+          "name": "Google: Gemini 2.5 Pro Preview 05-06",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.kilo.ai/api/gateway",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-2.5-pro-preview": {
+          "id": "google/gemini-2.5-pro-preview",
+          "name": "Google: Gemini 2.5 Pro Preview 06-05",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.kilo.ai/api/gateway",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-2.5-pro": {
+          "id": "google/gemini-2.5-pro",
+          "name": "Google: Gemini 2.5 Pro",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.kilo.ai/api/gateway",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-3-flash-preview": {
+          "id": "google/gemini-3-flash-preview",
+          "name": "Google: Gemini 3 Flash Preview",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.kilo.ai/api/gateway",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-3.1-flash-lite-preview": {
+          "id": "google/gemini-3.1-flash-lite-preview",
+          "name": "Google: Gemini 3.1 Flash Lite Preview",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.kilo.ai/api/gateway",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-3.1-pro-preview-customtools": {
+          "id": "google/gemini-3.1-pro-preview-customtools",
+          "name": "Google: Gemini 3.1 Pro Preview Custom Tools",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.kilo.ai/api/gateway",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-3.1-pro-preview": {
+          "id": "google/gemini-3.1-pro-preview",
+          "name": "Google: Gemini 3.1 Pro Preview",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.kilo.ai/api/gateway",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "mistralai/voxtral-small-24b-2507": {
+          "id": "mistralai/voxtral-small-24b-2507",
+          "name": "Mistral: Voxtral Small 24B 2507",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.kilo.ai/api/gateway",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "openai/gpt-4o-audio-preview": {
+          "id": "openai/gpt-4o-audio-preview",
+          "name": "OpenAI: GPT-4o Audio",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.kilo.ai/api/gateway",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "openai/gpt-audio-mini": {
+          "id": "openai/gpt-audio-mini",
+          "name": "OpenAI: GPT Audio Mini",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.kilo.ai/api/gateway",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "openai/gpt-audio": {
+          "id": "openai/gpt-audio",
+          "name": "OpenAI: GPT Audio",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.kilo.ai/api/gateway",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "openrouter/auto": {
+          "id": "openrouter/auto",
+          "name": "Auto Router",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.kilo.ai/api/gateway",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "xiaomi/mimo-v2-omni": {
+          "id": "xiaomi/mimo-v2-omni",
+          "name": "Xiaomi: MiMo-V2-Omni",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.kilo.ai/api/gateway",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "kimi-for-coding": {
+      "id": "kimi-for-coding",
+      "name": "Kimi For Coding",
+      "doc": "https://www.kimi.com/coding/docs/en/third-party-agents.html",
+      "env": [
+        "KIMI_API_KEY"
+      ],
+      "packageName": "@ai-sdk/anthropic",
+      "api": "https://api.kimi.com/coding/v1",
+      "models": {}
+    },
+    "kuae-cloud-coding-plan": {
+      "id": "kuae-cloud-coding-plan",
+      "name": "KUAE Cloud Coding Plan",
+      "doc": "https://docs.mthreads.com/kuaecloud/kuaecloud-doc-online/coding_plan/",
+      "env": [
+        "KUAE_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://coding-plan-endpoint.kuaecloud.net/v1",
+      "models": {}
+    },
+    "llama": {
+      "id": "llama",
+      "name": "Llama",
+      "doc": "https://llama.developer.meta.com/docs/models",
+      "env": [
+        "LLAMA_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.llama.com/compat/v1/",
+      "models": {}
+    },
+    "llmgateway": {
+      "id": "llmgateway",
+      "name": "LLM Gateway",
+      "doc": "https://llmgateway.io/docs",
+      "env": [
+        "LLMGATEWAY_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.llmgateway.io/v1",
+      "models": {}
+    },
+    "lmstudio": {
+      "id": "lmstudio",
+      "name": "LMStudio",
+      "doc": "https://lmstudio.ai/models",
+      "env": [
+        "LMSTUDIO_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "http://127.0.0.1:1234/v1",
+      "models": {}
+    },
+    "lucidquery": {
+      "id": "lucidquery",
+      "name": "LucidQuery AI",
+      "doc": "https://lucidquery.com/api/docs",
+      "env": [
+        "LUCIDQUERY_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://lucidquery.com/api/v1",
+      "models": {}
+    },
+    "meganova": {
+      "id": "meganova",
+      "name": "Meganova",
+      "doc": "https://docs.meganova.ai",
+      "env": [
+        "MEGANOVA_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.meganova.ai/v1",
+      "models": {}
+    },
+    "minimax": {
+      "id": "minimax",
+      "name": "MiniMax (minimax.io)",
+      "doc": "https://platform.minimax.io/docs/guides/quickstart",
+      "env": [
+        "MINIMAX_API_KEY"
+      ],
+      "packageName": "@ai-sdk/anthropic",
+      "api": "https://api.minimax.io/anthropic/v1",
+      "models": {}
+    },
+    "minimax-cn": {
+      "id": "minimax-cn",
+      "name": "MiniMax (minimaxi.com)",
+      "doc": "https://platform.minimaxi.com/docs/guides/quickstart",
+      "env": [
+        "MINIMAX_API_KEY"
+      ],
+      "packageName": "@ai-sdk/anthropic",
+      "api": "https://api.minimaxi.com/anthropic/v1",
+      "models": {}
+    },
+    "minimax-cn-coding-plan": {
+      "id": "minimax-cn-coding-plan",
+      "name": "MiniMax Coding Plan (minimaxi.com)",
+      "doc": "https://platform.minimaxi.com/docs/coding-plan/intro",
+      "env": [
+        "MINIMAX_API_KEY"
+      ],
+      "packageName": "@ai-sdk/anthropic",
+      "api": "https://api.minimaxi.com/anthropic/v1",
+      "models": {}
+    },
+    "minimax-coding-plan": {
+      "id": "minimax-coding-plan",
+      "name": "MiniMax Coding Plan (minimax.io)",
+      "doc": "https://platform.minimax.io/docs/coding-plan/intro",
+      "env": [
+        "MINIMAX_API_KEY"
+      ],
+      "packageName": "@ai-sdk/anthropic",
+      "api": "https://api.minimax.io/anthropic/v1",
+      "models": {}
+    },
+    "mistral": {
+      "id": "mistral",
+      "name": "Mistral",
+      "doc": "https://docs.mistral.ai/getting-started/models/",
+      "env": [
+        "MISTRAL_API_KEY"
+      ],
+      "packageName": "@ai-sdk/mistral",
+      "models": {}
+    },
+    "mixlayer": {
+      "id": "mixlayer",
+      "name": "Mixlayer",
+      "doc": "https://docs.mixlayer.com",
+      "env": [
+        "MIXLAYER_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://models.mixlayer.ai/v1",
+      "models": {}
+    },
+    "moark": {
+      "id": "moark",
+      "name": "Moark",
+      "doc": "https://moark.com/docs/openapi/v1#tag/%E6%96%87%E6%9C%AC%E7%94%9F%E6%88%90",
+      "env": [
+        "MOARK_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://moark.com/v1",
+      "models": {}
+    },
+    "modelscope": {
+      "id": "modelscope",
+      "name": "ModelScope",
+      "doc": "https://modelscope.cn/docs/model-service/API-Inference/intro",
+      "env": [
+        "MODELSCOPE_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api-inference.modelscope.cn/v1",
+      "models": {}
+    },
+    "moonshotai": {
+      "id": "moonshotai",
+      "name": "Moonshot AI",
+      "doc": "https://platform.moonshot.ai/docs/api/chat",
+      "env": [
+        "MOONSHOT_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.moonshot.ai/v1",
+      "models": {}
+    },
+    "moonshotai-cn": {
+      "id": "moonshotai-cn",
+      "name": "Moonshot AI (China)",
+      "doc": "https://platform.moonshot.cn/docs/api/chat",
+      "env": [
+        "MOONSHOT_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.moonshot.cn/v1",
+      "models": {}
+    },
+    "morph": {
+      "id": "morph",
+      "name": "Morph",
+      "doc": "https://docs.morphllm.com/api-reference/introduction",
+      "env": [
+        "MORPH_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.morphllm.com/v1",
+      "models": {}
+    },
+    "nano-gpt": {
+      "id": "nano-gpt",
+      "name": "NanoGPT",
+      "doc": "https://docs.nano-gpt.com",
+      "env": [
+        "NANO_GPT_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://nano-gpt.com/api/v1",
+      "models": {}
+    },
+    "nebius": {
+      "id": "nebius",
+      "name": "Nebius Token Factory",
+      "doc": "https://docs.tokenfactory.nebius.com/",
+      "env": [
+        "NEBIUS_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.tokenfactory.nebius.com/v1",
+      "models": {}
+    },
+    "nova": {
+      "id": "nova",
+      "name": "Nova",
+      "doc": "https://nova.amazon.com/dev/documentation",
+      "env": [
+        "NOVA_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.nova.amazon.com/v1",
+      "models": {}
+    },
+    "novita-ai": {
+      "id": "novita-ai",
+      "name": "NovitaAI",
+      "doc": "https://novita.ai/docs/guides/introduction",
+      "env": [
+        "NOVITA_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.novita.ai/openai",
+      "models": {
+        "qwen/qwen3-omni-30b-a3b-instruct": {
+          "id": "qwen/qwen3-omni-30b-a3b-instruct",
+          "name": "Qwen3 Omni 30B A3B Instruct",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.novita.ai/openai",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "qwen/qwen3-omni-30b-a3b-thinking": {
+          "id": "qwen/qwen3-omni-30b-a3b-thinking",
+          "name": "Qwen3 Omni 30B A3B Thinking",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.novita.ai/openai",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "nvidia": {
+      "id": "nvidia",
+      "name": "Nvidia",
+      "doc": "https://docs.api.nvidia.com/nim/",
+      "env": [
+        "NVIDIA_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://integrate.api.nvidia.com/v1",
+      "models": {
+        "microsoft/phi-4-mini-instruct": {
+          "id": "microsoft/phi-4-mini-instruct",
+          "name": "Phi-4-Mini",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://integrate.api.nvidia.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "nvidia/parakeet-tdt-0.6b-v2": {
+          "id": "nvidia/parakeet-tdt-0.6b-v2",
+          "name": "Parakeet TDT 0.6B v2",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://integrate.api.nvidia.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "openai/whisper-large-v3": {
+          "id": "openai/whisper-large-v3",
+          "name": "Whisper Large v3",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://integrate.api.nvidia.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "ollama-cloud": {
+      "id": "ollama-cloud",
+      "name": "Ollama Cloud",
+      "doc": "https://docs.ollama.com/cloud",
+      "env": [
+        "OLLAMA_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://ollama.com/v1",
+      "models": {}
     },
     "openai": {
       "id": "openai",
@@ -129,6 +1926,234 @@ export const transcriptionModelCatalog: GeneratedTranscriptionCatalog = {
         "OPENAI_API_KEY"
       ],
       "packageName": "@ai-sdk/openai",
+      "models": {}
+    },
+    "opencode": {
+      "id": "opencode",
+      "name": "OpenCode Zen",
+      "doc": "https://opencode.ai/docs/zen",
+      "env": [
+        "OPENCODE_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://opencode.ai/zen/v1",
+      "models": {
+        "gemini-3-flash": {
+          "id": "gemini-3-flash",
+          "name": "Gemini 3 Flash",
+          "packageName": "@ai-sdk/google",
+          "api": "https://opencode.ai/zen/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3-pro": {
+          "id": "gemini-3-pro",
+          "name": "Gemini 3 Pro",
+          "packageName": "@ai-sdk/google",
+          "api": "https://opencode.ai/zen/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3.1-pro": {
+          "id": "gemini-3.1-pro",
+          "name": "Gemini 3.1 Pro Preview",
+          "packageName": "@ai-sdk/google",
+          "api": "https://opencode.ai/zen/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "mimo-v2-omni-free": {
+          "id": "mimo-v2-omni-free",
+          "name": "MiMo V2 Omni Free",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://opencode.ai/zen/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "opencode-go": {
+      "id": "opencode-go",
+      "name": "OpenCode Go",
+      "doc": "https://opencode.ai/docs/zen",
+      "env": [
+        "OPENCODE_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://opencode.ai/zen/go/v1",
+      "models": {
+        "mimo-v2-omni": {
+          "id": "mimo-v2-omni",
+          "name": "MiMo V2 Omni",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://opencode.ai/zen/go/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "openrouter": {
+      "id": "openrouter",
+      "name": "OpenRouter",
+      "doc": "https://openrouter.ai/models",
+      "env": [
+        "OPENROUTER_API_KEY"
+      ],
+      "packageName": "@openrouter/ai-sdk-provider",
+      "api": "https://openrouter.ai/api/v1",
+      "models": {
+        "google/gemini-2.0-flash-001": {
+          "id": "google/gemini-2.0-flash-001",
+          "name": "Gemini 2.0 Flash",
+          "packageName": "@openrouter/ai-sdk-provider",
+          "api": "https://openrouter.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-2.5-flash-lite-preview-09-2025": {
+          "id": "google/gemini-2.5-flash-lite-preview-09-2025",
+          "name": "Gemini 2.5 Flash Lite Preview 09-25",
+          "packageName": "@openrouter/ai-sdk-provider",
+          "api": "https://openrouter.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-2.5-flash-lite": {
+          "id": "google/gemini-2.5-flash-lite",
+          "name": "Gemini 2.5 Flash Lite",
+          "packageName": "@openrouter/ai-sdk-provider",
+          "api": "https://openrouter.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-2.5-flash-preview-09-2025": {
+          "id": "google/gemini-2.5-flash-preview-09-2025",
+          "name": "Gemini 2.5 Flash Preview 09-25",
+          "packageName": "@openrouter/ai-sdk-provider",
+          "api": "https://openrouter.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-2.5-flash": {
+          "id": "google/gemini-2.5-flash",
+          "name": "Gemini 2.5 Flash",
+          "packageName": "@openrouter/ai-sdk-provider",
+          "api": "https://openrouter.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-2.5-pro-preview-05-06": {
+          "id": "google/gemini-2.5-pro-preview-05-06",
+          "name": "Gemini 2.5 Pro Preview 05-06",
+          "packageName": "@openrouter/ai-sdk-provider",
+          "api": "https://openrouter.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-2.5-pro-preview-06-05": {
+          "id": "google/gemini-2.5-pro-preview-06-05",
+          "name": "Gemini 2.5 Pro Preview 06-05",
+          "packageName": "@openrouter/ai-sdk-provider",
+          "api": "https://openrouter.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-2.5-pro": {
+          "id": "google/gemini-2.5-pro",
+          "name": "Gemini 2.5 Pro",
+          "packageName": "@openrouter/ai-sdk-provider",
+          "api": "https://openrouter.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-3-flash-preview": {
+          "id": "google/gemini-3-flash-preview",
+          "name": "Gemini 3 Flash Preview",
+          "packageName": "@openrouter/ai-sdk-provider",
+          "api": "https://openrouter.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-3-pro-preview": {
+          "id": "google/gemini-3-pro-preview",
+          "name": "Gemini 3 Pro Preview",
+          "packageName": "@openrouter/ai-sdk-provider",
+          "api": "https://openrouter.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-3.1-flash-lite-preview": {
+          "id": "google/gemini-3.1-flash-lite-preview",
+          "name": "Gemini 3.1 Flash Lite Preview",
+          "packageName": "@openrouter/ai-sdk-provider",
+          "api": "https://openrouter.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-3.1-pro-preview-customtools": {
+          "id": "google/gemini-3.1-pro-preview-customtools",
+          "name": "Gemini 3.1 Pro Preview Custom Tools",
+          "packageName": "@openrouter/ai-sdk-provider",
+          "api": "https://openrouter.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-3.1-pro-preview": {
+          "id": "google/gemini-3.1-pro-preview",
+          "name": "Gemini 3.1 Pro Preview",
+          "packageName": "@openrouter/ai-sdk-provider",
+          "api": "https://openrouter.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "xiaomi/mimo-v2-omni": {
+          "id": "xiaomi/mimo-v2-omni",
+          "name": "MiMo-V2-Omni",
+          "packageName": "@openrouter/ai-sdk-provider",
+          "api": "https://openrouter.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "ovhcloud": {
+      "id": "ovhcloud",
+      "name": "OVHcloud AI Endpoints",
+      "doc": "https://www.ovhcloud.com/en/public-cloud/ai-endpoints/catalog//",
+      "env": [
+        "OVHCLOUD_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1",
+      "models": {}
+    },
+    "perplexity": {
+      "id": "perplexity",
+      "name": "Perplexity",
+      "doc": "https://docs.perplexity.ai",
+      "env": [
+        "PERPLEXITY_API_KEY"
+      ],
+      "packageName": "@ai-sdk/perplexity",
       "models": {}
     },
     "perplexity-agent": {
@@ -145,25 +2170,671 @@ export const transcriptionModelCatalog: GeneratedTranscriptionCatalog = {
           "id": "google/gemini-2.5-flash",
           "name": "Gemini 2.5 Flash",
           "packageName": "@ai-sdk/openai",
-          "api": "https://api.perplexity.ai/v1"
+          "api": "https://api.perplexity.ai/v1",
+          "supportedLoadModes": [
+            "text",
+            "transcription"
+          ]
         },
         "google/gemini-2.5-pro": {
           "id": "google/gemini-2.5-pro",
           "name": "Gemini 2.5 Pro",
           "packageName": "@ai-sdk/openai",
-          "api": "https://api.perplexity.ai/v1"
+          "api": "https://api.perplexity.ai/v1",
+          "supportedLoadModes": [
+            "text",
+            "transcription"
+          ]
         },
         "google/gemini-3-flash-preview": {
           "id": "google/gemini-3-flash-preview",
           "name": "Gemini 3 Flash Preview",
           "packageName": "@ai-sdk/openai",
-          "api": "https://api.perplexity.ai/v1"
+          "api": "https://api.perplexity.ai/v1",
+          "supportedLoadModes": [
+            "text",
+            "transcription"
+          ]
         },
         "google/gemini-3.1-pro-preview": {
           "id": "google/gemini-3.1-pro-preview",
           "name": "Gemini 3.1 Pro Preview",
           "packageName": "@ai-sdk/openai",
-          "api": "https://api.perplexity.ai/v1"
+          "api": "https://api.perplexity.ai/v1",
+          "supportedLoadModes": [
+            "text",
+            "transcription"
+          ]
+        }
+      }
+    },
+    "poe": {
+      "id": "poe",
+      "name": "Poe",
+      "doc": "https://creator.poe.com/docs/external-applications/openai-compatible-api",
+      "env": [
+        "POE_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.poe.com/v1",
+      "models": {
+        "google/gemini-2.0-flash-lite": {
+          "id": "google/gemini-2.0-flash-lite",
+          "name": "Gemini-2.0-Flash-Lite",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.poe.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-2.0-flash": {
+          "id": "google/gemini-2.0-flash",
+          "name": "Gemini-2.0-Flash",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.poe.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-2.5-flash-lite": {
+          "id": "google/gemini-2.5-flash-lite",
+          "name": "Gemini-2.5-Flash-Lite",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.poe.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-2.5-flash": {
+          "id": "google/gemini-2.5-flash",
+          "name": "Gemini-2.5-Flash",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.poe.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-2.5-pro": {
+          "id": "google/gemini-2.5-pro",
+          "name": "Gemini-2.5-Pro",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.poe.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-3-flash": {
+          "id": "google/gemini-3-flash",
+          "name": "Gemini-3-Flash",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.poe.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-3-pro": {
+          "id": "google/gemini-3-pro",
+          "name": "Gemini-3-Pro",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.poe.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-3.1-flash-lite": {
+          "id": "google/gemini-3.1-flash-lite",
+          "name": "Gemini-3.1-Flash-Lite",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.poe.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-3.1-pro": {
+          "id": "google/gemini-3.1-pro",
+          "name": "Gemini-3.1-Pro",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.poe.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "privatemode-ai": {
+      "id": "privatemode-ai",
+      "name": "Privatemode AI",
+      "doc": "https://docs.privatemode.ai/api/overview",
+      "env": [
+        "PRIVATEMODE_API_KEY",
+        "PRIVATEMODE_ENDPOINT"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "http://localhost:8080/v1",
+      "models": {}
+    },
+    "qihang-ai": {
+      "id": "qihang-ai",
+      "name": "QiHang",
+      "doc": "https://www.qhaigc.net/docs",
+      "env": [
+        "QIHANG_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.qhaigc.net/v1",
+      "models": {
+        "gemini-2.5-flash": {
+          "id": "gemini-2.5-flash",
+          "name": "Gemini 2.5 Flash",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.qhaigc.net/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3-flash-preview": {
+          "id": "gemini-3-flash-preview",
+          "name": "Gemini 3 Flash Preview",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.qhaigc.net/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3-pro-preview": {
+          "id": "gemini-3-pro-preview",
+          "name": "Gemini 3 Pro Preview",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.qhaigc.net/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "qiniu-ai": {
+      "id": "qiniu-ai",
+      "name": "Qiniu",
+      "doc": "https://developer.qiniu.com/aitokenapi",
+      "env": [
+        "QINIU_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.qnaigc.com/v1",
+      "models": {
+        "gemini-2.0-flash-lite": {
+          "id": "gemini-2.0-flash-lite",
+          "name": "Gemini 2.0 Flash Lite",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.qnaigc.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.0-flash": {
+          "id": "gemini-2.0-flash",
+          "name": "Gemini 2.0 Flash",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.qnaigc.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-flash-lite": {
+          "id": "gemini-2.5-flash-lite",
+          "name": "Gemini 2.5 Flash Lite",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.qnaigc.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-flash": {
+          "id": "gemini-2.5-flash",
+          "name": "Gemini 2.5 Flash",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.qnaigc.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-pro": {
+          "id": "gemini-2.5-pro",
+          "name": "Gemini 2.5 Pro",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.qnaigc.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3.0-flash-preview": {
+          "id": "gemini-3.0-flash-preview",
+          "name": "Gemini 3.0 Flash Preview",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.qnaigc.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3.0-pro-preview": {
+          "id": "gemini-3.0-pro-preview",
+          "name": "Gemini 3.0 Pro Preview",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.qnaigc.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "qwen-vl-max-2025-01-25": {
+          "id": "qwen-vl-max-2025-01-25",
+          "name": "Qwen VL-MAX-2025-01-25",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.qnaigc.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "qwen2.5-vl-72b-instruct": {
+          "id": "qwen2.5-vl-72b-instruct",
+          "name": "Qwen 2.5 VL 72B Instruct",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.qnaigc.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "qwen2.5-vl-7b-instruct": {
+          "id": "qwen2.5-vl-7b-instruct",
+          "name": "Qwen 2.5 VL 7B Instruct",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.qnaigc.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "x-ai/grok-4-fast-non-reasoning": {
+          "id": "x-ai/grok-4-fast-non-reasoning",
+          "name": "X-Ai/Grok-4-Fast-Non-Reasoning",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.qnaigc.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "x-ai/grok-4-fast-reasoning": {
+          "id": "x-ai/grok-4-fast-reasoning",
+          "name": "X-Ai/Grok-4-Fast-Reasoning",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.qnaigc.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "x-ai/grok-4-fast": {
+          "id": "x-ai/grok-4-fast",
+          "name": "x-AI/Grok-4-Fast",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.qnaigc.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "x-ai/grok-4.1-fast-non-reasoning": {
+          "id": "x-ai/grok-4.1-fast-non-reasoning",
+          "name": "X-Ai/Grok 4.1 Fast Non Reasoning",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.qnaigc.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "x-ai/grok-4.1-fast-reasoning": {
+          "id": "x-ai/grok-4.1-fast-reasoning",
+          "name": "X-Ai/Grok 4.1 Fast Reasoning",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.qnaigc.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "requesty": {
+      "id": "requesty",
+      "name": "Requesty",
+      "doc": "https://requesty.ai/solution/llm-routing/models",
+      "env": [
+        "REQUESTY_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://router.requesty.ai/v1",
+      "models": {
+        "google/gemini-2.5-flash": {
+          "id": "google/gemini-2.5-flash",
+          "name": "Gemini 2.5 Flash",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://router.requesty.ai/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-2.5-pro": {
+          "id": "google/gemini-2.5-pro",
+          "name": "Gemini 2.5 Pro",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://router.requesty.ai/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-3-flash-preview": {
+          "id": "google/gemini-3-flash-preview",
+          "name": "Gemini 3 Flash",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://router.requesty.ai/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-3-pro-preview": {
+          "id": "google/gemini-3-pro-preview",
+          "name": "Gemini 3 Pro",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://router.requesty.ai/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "openai/gpt-5": {
+          "id": "openai/gpt-5",
+          "name": "GPT-5",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://router.requesty.ai/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "sap-ai-core": {
+      "id": "sap-ai-core",
+      "name": "SAP AI Core",
+      "doc": "https://help.sap.com/docs/sap-ai-core",
+      "env": [
+        "AICORE_SERVICE_KEY"
+      ],
+      "packageName": "@jerome-benoit/sap-ai-provider-v2",
+      "models": {
+        "gemini-2.5-flash-lite": {
+          "id": "gemini-2.5-flash-lite",
+          "name": "gemini-2.5-flash-lite",
+          "packageName": "@jerome-benoit/sap-ai-provider-v2",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-flash": {
+          "id": "gemini-2.5-flash",
+          "name": "gemini-2.5-flash",
+          "packageName": "@jerome-benoit/sap-ai-provider-v2",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-2.5-pro": {
+          "id": "gemini-2.5-pro",
+          "name": "gemini-2.5-pro",
+          "packageName": "@jerome-benoit/sap-ai-provider-v2",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "scaleway": {
+      "id": "scaleway",
+      "name": "Scaleway",
+      "doc": "https://www.scaleway.com/en/docs/generative-apis/",
+      "env": [
+        "SCALEWAY_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.scaleway.ai/v1",
+      "models": {
+        "voxtral-small-24b-2507": {
+          "id": "voxtral-small-24b-2507",
+          "name": "Voxtral Small 24B 2507",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.scaleway.ai/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "whisper-large-v3": {
+          "id": "whisper-large-v3",
+          "name": "Whisper Large v3",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.scaleway.ai/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "siliconflow": {
+      "id": "siliconflow",
+      "name": "SiliconFlow",
+      "doc": "https://cloud.siliconflow.com/models",
+      "env": [
+        "SILICONFLOW_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.siliconflow.com/v1",
+      "models": {
+        "Qwen/Qwen3-Omni-30B-A3B-Captioner": {
+          "id": "Qwen/Qwen3-Omni-30B-A3B-Captioner",
+          "name": "Qwen/Qwen3-Omni-30B-A3B-Captioner",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.siliconflow.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "Qwen/Qwen3-Omni-30B-A3B-Instruct": {
+          "id": "Qwen/Qwen3-Omni-30B-A3B-Instruct",
+          "name": "Qwen/Qwen3-Omni-30B-A3B-Instruct",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.siliconflow.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "Qwen/Qwen3-Omni-30B-A3B-Thinking": {
+          "id": "Qwen/Qwen3-Omni-30B-A3B-Thinking",
+          "name": "Qwen/Qwen3-Omni-30B-A3B-Thinking",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.siliconflow.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "siliconflow-cn": {
+      "id": "siliconflow-cn",
+      "name": "SiliconFlow (China)",
+      "doc": "https://cloud.siliconflow.com/models",
+      "env": [
+        "SILICONFLOW_CN_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.siliconflow.cn/v1",
+      "models": {}
+    },
+    "stackit": {
+      "id": "stackit",
+      "name": "STACKIT",
+      "doc": "https://docs.stackit.cloud/products/data-and-ai/ai-model-serving/basics/available-shared-models",
+      "env": [
+        "STACKIT_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.openai-compat.model-serving.eu01.onstackit.cloud/v1",
+      "models": {}
+    },
+    "stepfun": {
+      "id": "stepfun",
+      "name": "StepFun",
+      "doc": "https://platform.stepfun.com/docs/zh/overview/concept",
+      "env": [
+        "STEPFUN_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.stepfun.com/v1",
+      "models": {}
+    },
+    "submodel": {
+      "id": "submodel",
+      "name": "submodel",
+      "doc": "https://submodel.gitbook.io",
+      "env": [
+        "SUBMODEL_INSTAGEN_ACCESS_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://llm.submodel.ai/v1",
+      "models": {}
+    },
+    "synthetic": {
+      "id": "synthetic",
+      "name": "Synthetic",
+      "doc": "https://synthetic.new/pricing",
+      "env": [
+        "SYNTHETIC_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.synthetic.new/openai/v1",
+      "models": {}
+    },
+    "tencent-coding-plan": {
+      "id": "tencent-coding-plan",
+      "name": "Tencent Coding Plan (China)",
+      "doc": "https://cloud.tencent.com/document/product/1772/128947",
+      "env": [
+        "TENCENT_CODING_PLAN_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.lkeap.cloud.tencent.com/coding/v3",
+      "models": {}
+    },
+    "the-grid-ai": {
+      "id": "the-grid-ai",
+      "name": "The Grid AI",
+      "doc": "https://thegrid.ai/docs",
+      "env": [
+        "THEGRIDAI_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.thegrid.ai/v1",
+      "models": {}
+    },
+    "togetherai": {
+      "id": "togetherai",
+      "name": "Together AI",
+      "doc": "https://docs.together.ai/docs/serverless-models",
+      "env": [
+        "TOGETHER_API_KEY"
+      ],
+      "packageName": "@ai-sdk/togetherai",
+      "models": {}
+    },
+    "upstage": {
+      "id": "upstage",
+      "name": "Upstage",
+      "doc": "https://developers.upstage.ai/docs/apis/chat",
+      "env": [
+        "UPSTAGE_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.upstage.ai/v1/solar",
+      "models": {}
+    },
+    "v0": {
+      "id": "v0",
+      "name": "v0",
+      "doc": "https://sdk.vercel.ai/providers/ai-sdk-providers/vercel",
+      "env": [
+        "V0_API_KEY"
+      ],
+      "packageName": "@ai-sdk/vercel",
+      "models": {}
+    },
+    "venice": {
+      "id": "venice",
+      "name": "Venice AI",
+      "doc": "https://docs.venice.ai",
+      "env": [
+        "VENICE_API_KEY"
+      ],
+      "packageName": "venice-ai-sdk-provider",
+      "models": {
+        "gemini-3-1-pro-preview": {
+          "id": "gemini-3-1-pro-preview",
+          "name": "Gemini 3.1 Pro Preview",
+          "packageName": "venice-ai-sdk-provider",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3-flash-preview": {
+          "id": "gemini-3-flash-preview",
+          "name": "Gemini 3 Flash Preview",
+          "packageName": "venice-ai-sdk-provider",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "vercel": {
+      "id": "vercel",
+      "name": "Vercel AI Gateway",
+      "doc": "https://github.com/vercel/ai/tree/5eb85cc45a259553501f535b8ac79a77d0e79223/packages/gateway",
+      "env": [
+        "AI_GATEWAY_API_KEY"
+      ],
+      "packageName": "@ai-sdk/gateway",
+      "models": {
+        "google/gemini-2.5-flash-lite-preview-09-2025": {
+          "id": "google/gemini-2.5-flash-lite-preview-09-2025",
+          "name": "Gemini 2.5 Flash Lite Preview 09-25",
+          "packageName": "@ai-sdk/gateway",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-2.5-flash-lite": {
+          "id": "google/gemini-2.5-flash-lite",
+          "name": "Gemini 2.5 Flash Lite",
+          "packageName": "@ai-sdk/gateway",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-2.5-flash-preview-09-2025": {
+          "id": "google/gemini-2.5-flash-preview-09-2025",
+          "name": "Gemini 2.5 Flash Preview 09-25",
+          "packageName": "@ai-sdk/gateway",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-3-pro-preview": {
+          "id": "google/gemini-3-pro-preview",
+          "name": "Gemini 3 Pro Preview",
+          "packageName": "@ai-sdk/gateway",
+          "supportedLoadModes": [
+            "text"
+          ]
         }
       }
     },
@@ -176,6 +2847,231 @@ export const transcriptionModelCatalog: GeneratedTranscriptionCatalog = {
       ],
       "packageName": "@ai-sdk/openai",
       "api": "https://api.vivgrid.com/v1",
+      "models": {
+        "gemini-3.1-flash-lite-preview": {
+          "id": "gemini-3.1-flash-lite-preview",
+          "name": "Gemini 3.1 Flash Lite Preview",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.vivgrid.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "gemini-3.1-pro-preview": {
+          "id": "gemini-3.1-pro-preview",
+          "name": "Gemini 3.1 Pro Preview",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.vivgrid.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "vultr": {
+      "id": "vultr",
+      "name": "Vultr",
+      "doc": "https://api.vultrinference.com/",
+      "env": [
+        "VULTR_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.vultrinference.com/v1",
+      "models": {}
+    },
+    "wandb": {
+      "id": "wandb",
+      "name": "Weights & Biases",
+      "doc": "https://docs.wandb.ai/guides/integrations/inference/",
+      "env": [
+        "WANDB_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.inference.wandb.ai/v1",
+      "models": {}
+    },
+    "xai": {
+      "id": "xai",
+      "name": "xAI",
+      "doc": "https://docs.x.ai/docs/models",
+      "env": [
+        "XAI_API_KEY"
+      ],
+      "packageName": "@ai-sdk/xai",
+      "models": {}
+    },
+    "xiaomi": {
+      "id": "xiaomi",
+      "name": "Xiaomi",
+      "doc": "https://platform.xiaomimimo.com/#/docs",
+      "env": [
+        "XIAOMI_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.xiaomimimo.com/v1",
+      "models": {
+        "mimo-v2-omni": {
+          "id": "mimo-v2-omni",
+          "name": "MiMo-V2-Omni",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.xiaomimimo.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "xiaomi-token-plan-ams": {
+      "id": "xiaomi-token-plan-ams",
+      "name": "Xiaomi Token Plan (Europe)",
+      "doc": "https://platform.xiaomimimo.com/#/docs",
+      "env": [
+        "XIAOMI_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://token-plan-ams.xiaomimimo.com/v1",
+      "models": {}
+    },
+    "xiaomi-token-plan-cn": {
+      "id": "xiaomi-token-plan-cn",
+      "name": "Xiaomi Token Plan (China)",
+      "doc": "https://platform.xiaomimimo.com/#/docs",
+      "env": [
+        "XIAOMI_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://token-plan-cn.xiaomimimo.com/v1",
+      "models": {
+        "mimo-v2-omni": {
+          "id": "mimo-v2-omni",
+          "name": "MiMo-V2-Omni",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://token-plan-cn.xiaomimimo.com/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "xiaomi-token-plan-sgp": {
+      "id": "xiaomi-token-plan-sgp",
+      "name": "Xiaomi Token Plan (Singapore)",
+      "doc": "https://platform.xiaomimimo.com/#/docs",
+      "env": [
+        "XIAOMI_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://token-plan-sgp.xiaomimimo.com/v1",
+      "models": {}
+    },
+    "zai": {
+      "id": "zai",
+      "name": "Z.AI",
+      "doc": "https://docs.z.ai/guides/overview/pricing",
+      "env": [
+        "ZHIPU_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.z.ai/api/paas/v4",
+      "models": {}
+    },
+    "zai-coding-plan": {
+      "id": "zai-coding-plan",
+      "name": "Z.AI Coding Plan",
+      "doc": "https://docs.z.ai/devpack/overview",
+      "env": [
+        "ZHIPU_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://api.z.ai/api/coding/paas/v4",
+      "models": {}
+    },
+    "zenmux": {
+      "id": "zenmux",
+      "name": "ZenMux",
+      "doc": "https://docs.zenmux.ai",
+      "env": [
+        "ZENMUX_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://zenmux.ai/api/v1",
+      "models": {
+        "google/gemini-2.5-flash-lite": {
+          "id": "google/gemini-2.5-flash-lite",
+          "name": "Gemini 2.5 Flash Lite",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://zenmux.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-2.5-flash": {
+          "id": "google/gemini-2.5-flash",
+          "name": "Gemini 2.5 Flash",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://zenmux.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-2.5-pro": {
+          "id": "google/gemini-2.5-pro",
+          "name": "Gemini 2.5 Pro",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://zenmux.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-3-flash-preview": {
+          "id": "google/gemini-3-flash-preview",
+          "name": "Gemini 3 Flash Preview",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://zenmux.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-3.1-flash-lite-preview": {
+          "id": "google/gemini-3.1-flash-lite-preview",
+          "name": "Gemini 3.1 Flash Lite Preview",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://zenmux.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        },
+        "google/gemini-3.1-pro-preview": {
+          "id": "google/gemini-3.1-pro-preview",
+          "name": "Gemini 3.1 Pro Preview",
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://zenmux.ai/api/v1",
+          "supportedLoadModes": [
+            "text"
+          ]
+        }
+      }
+    },
+    "zhipuai": {
+      "id": "zhipuai",
+      "name": "Zhipu AI",
+      "doc": "https://docs.z.ai/guides/overview/pricing",
+      "env": [
+        "ZHIPU_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://open.bigmodel.cn/api/paas/v4",
+      "models": {}
+    },
+    "zhipuai-coding-plan": {
+      "id": "zhipuai-coding-plan",
+      "name": "Zhipu AI Coding Plan",
+      "doc": "https://docs.bigmodel.cn/cn/coding-plan/overview",
+      "env": [
+        "ZHIPU_API_KEY"
+      ],
+      "packageName": "@ai-sdk/openai-compatible",
+      "api": "https://open.bigmodel.cn/api/coding/paas/v4",
       "models": {}
     }
   }

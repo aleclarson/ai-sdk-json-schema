@@ -16,7 +16,7 @@ export const textModelCatalog: GeneratedTextCatalog = {
   "source": {
     "repo": "anomalyco/models.dev",
     "ref": "dev",
-    "generatedAt": "2026-04-16T14:36:22.889Z"
+    "generatedAt": "2026-04-16T19:59:34.043Z"
   },
   "packageNames": [
     "@ai-sdk/alibaba",
@@ -2760,6 +2760,28 @@ export const textModelCatalog: GeneratedTextCatalog = {
           "packageName": "@ai-sdk/openai-compatible",
           "api": "https://dashscope.aliyuncs.com/compatible-mode/v1"
         },
+        "glm-5.1": {
+          "id": "glm-5.1",
+          "name": "GLM-5.1",
+          "family": "glm",
+          "attachment": false,
+          "reasoning": true,
+          "toolCall": true,
+          "structuredOutput": true,
+          "temperature": true,
+          "releaseDate": "2026-04-14",
+          "lastUpdated": "2026-04-14",
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://dashscope.aliyuncs.com/compatible-mode/v1"
+        },
         "glm-5": {
           "id": "glm-5",
           "name": "GLM-5",
@@ -3690,6 +3712,30 @@ export const textModelCatalog: GeneratedTextCatalog = {
           },
           "packageName": "@ai-sdk/amazon-bedrock"
         },
+        "anthropic.claude-opus-4-7": {
+          "id": "anthropic.claude-opus-4-7",
+          "name": "Claude Opus 4.7",
+          "family": "claude-opus",
+          "attachment": true,
+          "reasoning": true,
+          "toolCall": true,
+          "structuredOutput": true,
+          "temperature": false,
+          "knowledge": "2026-01",
+          "releaseDate": "2026-04-16",
+          "lastUpdated": "2026-04-16",
+          "modalities": {
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "packageName": "@ai-sdk/amazon-bedrock"
+        },
         "anthropic.claude-sonnet-4-5-20250929-v1:0": {
           "id": "anthropic.claude-sonnet-4-5-20250929-v1:0",
           "name": "Claude Sonnet 4.5",
@@ -3852,6 +3898,30 @@ export const textModelCatalog: GeneratedTextCatalog = {
           },
           "packageName": "@ai-sdk/amazon-bedrock"
         },
+        "eu.anthropic.claude-opus-4-7": {
+          "id": "eu.anthropic.claude-opus-4-7",
+          "name": "Claude Opus 4.7 (EU)",
+          "family": "claude-opus",
+          "attachment": true,
+          "reasoning": true,
+          "toolCall": true,
+          "structuredOutput": true,
+          "temperature": false,
+          "knowledge": "2026-01",
+          "releaseDate": "2026-04-16",
+          "lastUpdated": "2026-04-16",
+          "modalities": {
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "packageName": "@ai-sdk/amazon-bedrock"
+        },
         "eu.anthropic.claude-sonnet-4-5-20250929-v1:0": {
           "id": "eu.anthropic.claude-sonnet-4-5-20250929-v1:0",
           "name": "Claude Sonnet 4.5 (EU)",
@@ -3959,6 +4029,30 @@ export const textModelCatalog: GeneratedTextCatalog = {
           "knowledge": "2025-05",
           "releaseDate": "2026-02-05",
           "lastUpdated": "2026-03-18",
+          "modalities": {
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "packageName": "@ai-sdk/amazon-bedrock"
+        },
+        "global.anthropic.claude-opus-4-7": {
+          "id": "global.anthropic.claude-opus-4-7",
+          "name": "Claude Opus 4.7 (Global)",
+          "family": "claude-opus",
+          "attachment": true,
+          "reasoning": true,
+          "toolCall": true,
+          "structuredOutput": true,
+          "temperature": false,
+          "knowledge": "2026-01",
+          "releaseDate": "2026-04-16",
+          "lastUpdated": "2026-04-16",
           "modalities": {
             "input": [
               "text",
@@ -4473,6 +4567,30 @@ export const textModelCatalog: GeneratedTextCatalog = {
           },
           "packageName": "@ai-sdk/amazon-bedrock"
         },
+        "us.anthropic.claude-opus-4-7": {
+          "id": "us.anthropic.claude-opus-4-7",
+          "name": "Claude Opus 4.7 (US)",
+          "family": "claude-opus",
+          "attachment": true,
+          "reasoning": true,
+          "toolCall": true,
+          "structuredOutput": true,
+          "temperature": false,
+          "knowledge": "2026-01",
+          "releaseDate": "2026-04-16",
+          "lastUpdated": "2026-04-16",
+          "modalities": {
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "packageName": "@ai-sdk/amazon-bedrock"
+        },
         "us.anthropic.claude-sonnet-4-5-20250929-v1:0": {
           "id": "us.anthropic.claude-sonnet-4-5-20250929-v1:0",
           "name": "Claude Sonnet 4.5 (US)",
@@ -4696,6 +4814,29 @@ export const textModelCatalog: GeneratedTextCatalog = {
           "knowledge": "2025-05",
           "releaseDate": "2026-02-05",
           "lastUpdated": "2026-03-13",
+          "modalities": {
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "packageName": "@ai-sdk/anthropic"
+        },
+        "claude-opus-4-7": {
+          "id": "claude-opus-4-7",
+          "name": "Claude Opus 4.7",
+          "family": "claude-opus",
+          "attachment": true,
+          "reasoning": true,
+          "toolCall": true,
+          "temperature": false,
+          "knowledge": "2026-01",
+          "releaseDate": "2026-04-16",
+          "lastUpdated": "2026-04-16",
           "modalities": {
             "input": [
               "text",
@@ -8835,6 +8976,28 @@ export const textModelCatalog: GeneratedTextCatalog = {
           "packageName": "@ai-sdk/openai-compatible",
           "api": "https://api.cortecs.ai/v1"
         },
+        "glm-5.1": {
+          "id": "glm-5.1",
+          "name": "GLM-5.1",
+          "family": "glm",
+          "attachment": false,
+          "reasoning": true,
+          "toolCall": true,
+          "structuredOutput": true,
+          "temperature": true,
+          "releaseDate": "2026-04-14",
+          "lastUpdated": "2026-04-14",
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.cortecs.ai/v1"
+        },
         "glm-5": {
           "id": "glm-5",
           "name": "GLM 5",
@@ -8936,6 +9099,28 @@ export const textModelCatalog: GeneratedTextCatalog = {
               "text",
               "image",
               "video"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "packageName": "@ai-sdk/openai-compatible",
+          "api": "https://api.cortecs.ai/v1"
+        },
+        "minimax-M2.7": {
+          "id": "minimax-M2.7",
+          "name": "MiniMax-M2.7",
+          "family": "minimax",
+          "attachment": false,
+          "reasoning": true,
+          "toolCall": true,
+          "structuredOutput": true,
+          "temperature": true,
+          "releaseDate": "2026-03-18",
+          "lastUpdated": "2026-03-18",
+          "modalities": {
+            "input": [
+              "text"
             ],
             "output": [
               "text"
@@ -9857,30 +10042,6 @@ export const textModelCatalog: GeneratedTextCatalog = {
           "packageName": "@ai-sdk/openai-compatible",
           "api": "https://app.frogbot.ai/api/v1"
         },
-        "claude-opus-4-5": {
-          "id": "claude-opus-4-5",
-          "name": "Claude Opus 4.5",
-          "family": "claude-opus",
-          "attachment": true,
-          "reasoning": true,
-          "toolCall": true,
-          "temperature": true,
-          "knowledge": "2025-03-31",
-          "releaseDate": "2025-11-24",
-          "lastUpdated": "2025-11-24",
-          "modalities": {
-            "input": [
-              "text",
-              "image",
-              "pdf"
-            ],
-            "output": [
-              "text"
-            ]
-          },
-          "packageName": "@ai-sdk/openai-compatible",
-          "api": "https://app.frogbot.ai/api/v1"
-        },
         "claude-opus-4-6": {
           "id": "claude-opus-4-6",
           "name": "Claude Opus 4.6",
@@ -9905,17 +10066,17 @@ export const textModelCatalog: GeneratedTextCatalog = {
           "packageName": "@ai-sdk/openai-compatible",
           "api": "https://app.frogbot.ai/api/v1"
         },
-        "claude-sonnet-4-5": {
-          "id": "claude-sonnet-4-5",
-          "name": "Claude Sonnet 4.5",
-          "family": "claude-sonnet",
+        "claude-opus-4-7": {
+          "id": "claude-opus-4-7",
+          "name": "Claude Opus 4.7",
+          "family": "claude-opus",
           "attachment": true,
           "reasoning": true,
           "toolCall": true,
-          "temperature": true,
-          "knowledge": "2025-07-31",
-          "releaseDate": "2025-09-29",
-          "lastUpdated": "2025-09-29",
+          "temperature": false,
+          "knowledge": "2026-01-01",
+          "releaseDate": "2026-04-16",
+          "lastUpdated": "2026-04-16",
           "modalities": {
             "input": [
               "text",
@@ -11926,6 +12087,29 @@ export const textModelCatalog: GeneratedTextCatalog = {
           "knowledge": "2025-05",
           "releaseDate": "2026-02-05",
           "lastUpdated": "2026-02-05",
+          "modalities": {
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "packageName": "@ai-sdk/google-vertex/anthropic"
+        },
+        "claude-opus-4-7@default": {
+          "id": "claude-opus-4-7@default",
+          "name": "Claude Opus 4.7",
+          "family": "claude-opus",
+          "attachment": true,
+          "reasoning": true,
+          "toolCall": true,
+          "temperature": false,
+          "knowledge": "2026-01",
+          "releaseDate": "2026-04-16",
+          "lastUpdated": "2026-04-16",
           "modalities": {
             "input": [
               "text",
@@ -31117,6 +31301,30 @@ export const textModelCatalog: GeneratedTextCatalog = {
           "packageName": "@ai-sdk/anthropic",
           "api": "https://opencode.ai/zen/v1"
         },
+        "claude-opus-4-7": {
+          "id": "claude-opus-4-7",
+          "name": "Claude Opus 4.7",
+          "family": "claude-opus",
+          "attachment": true,
+          "reasoning": true,
+          "toolCall": true,
+          "temperature": false,
+          "knowledge": "2026-01",
+          "releaseDate": "2026-04-16",
+          "lastUpdated": "2026-04-16",
+          "modalities": {
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "packageName": "@ai-sdk/anthropic",
+          "api": "https://opencode.ai/zen/v1"
+        },
         "claude-sonnet-4-5": {
           "id": "claude-sonnet-4-5",
           "name": "Claude Sonnet 4.5",
@@ -41963,6 +42171,28 @@ export const textModelCatalog: GeneratedTextCatalog = {
           },
           "packageName": "venice-ai-sdk-provider"
         },
+        "claude-opus-4-7": {
+          "id": "claude-opus-4-7",
+          "name": "Claude Opus 4.7",
+          "family": "claude-opus",
+          "attachment": true,
+          "reasoning": true,
+          "toolCall": true,
+          "structuredOutput": true,
+          "temperature": false,
+          "releaseDate": "2026-04-16",
+          "lastUpdated": "2026-04-16",
+          "modalities": {
+            "input": [
+              "text",
+              "image"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "packageName": "venice-ai-sdk-provider"
+        },
         "claude-sonnet-4-5": {
           "id": "claude-sonnet-4-5",
           "name": "Claude Sonnet 4.5",
@@ -42215,27 +42445,6 @@ export const textModelCatalog: GeneratedTextCatalog = {
           },
           "packageName": "venice-ai-sdk-provider"
         },
-        "grok-code-fast-1": {
-          "id": "grok-code-fast-1",
-          "name": "Grok Code Fast 1",
-          "family": "grok",
-          "attachment": false,
-          "reasoning": true,
-          "toolCall": true,
-          "structuredOutput": true,
-          "temperature": true,
-          "releaseDate": "2025-12-01",
-          "lastUpdated": "2026-03-12",
-          "modalities": {
-            "input": [
-              "text"
-            ],
-            "output": [
-              "text"
-            ]
-          },
-          "packageName": "venice-ai-sdk-provider"
-        },
         "hermes-3-llama-3.1-405b": {
           "id": "hermes-3-llama-3.1-405b",
           "name": "Hermes 3 Llama 3.1 405b",
@@ -42355,46 +42564,6 @@ export const textModelCatalog: GeneratedTextCatalog = {
           "temperature": true,
           "releaseDate": "2026-02-20",
           "lastUpdated": "2026-04-09",
-          "modalities": {
-            "input": [
-              "text"
-            ],
-            "output": [
-              "text"
-            ]
-          },
-          "packageName": "venice-ai-sdk-provider"
-        },
-        "mercury-edit-2": {
-          "id": "mercury-edit-2",
-          "name": "Mercury Edit 2",
-          "attachment": false,
-          "reasoning": true,
-          "toolCall": false,
-          "temperature": true,
-          "releaseDate": "2026-03-30",
-          "lastUpdated": "2026-03-30",
-          "modalities": {
-            "input": [
-              "text"
-            ],
-            "output": [
-              "text"
-            ]
-          },
-          "packageName": "venice-ai-sdk-provider"
-        },
-        "minimax-m21": {
-          "id": "minimax-m21",
-          "name": "MiniMax M2.1",
-          "family": "minimax",
-          "attachment": false,
-          "reasoning": true,
-          "toolCall": true,
-          "structuredOutput": true,
-          "temperature": true,
-          "releaseDate": "2025-12-01",
-          "lastUpdated": "2026-03-16",
           "modalities": {
             "input": [
               "text"
@@ -42826,7 +42995,7 @@ export const textModelCatalog: GeneratedTextCatalog = {
           "structuredOutput": true,
           "temperature": true,
           "releaseDate": "2026-02-25",
-          "lastUpdated": "2026-04-12",
+          "lastUpdated": "2026-04-16",
           "modalities": {
             "input": [
               "text",
@@ -42849,7 +43018,7 @@ export const textModelCatalog: GeneratedTextCatalog = {
           "structuredOutput": true,
           "temperature": true,
           "releaseDate": "2026-02-16",
-          "lastUpdated": "2026-04-09",
+          "lastUpdated": "2026-04-16",
           "modalities": {
             "input": [
               "text",
@@ -43478,6 +43647,28 @@ export const textModelCatalog: GeneratedTextCatalog = {
           },
           "packageName": "@ai-sdk/gateway"
         },
+        "anthropic/claude-opus-4.7": {
+          "id": "anthropic/claude-opus-4.7",
+          "name": "Claude Opus 4.7",
+          "family": "claude-opus",
+          "attachment": true,
+          "reasoning": true,
+          "toolCall": true,
+          "temperature": false,
+          "releaseDate": "2026-04-16",
+          "lastUpdated": "2026-04-16",
+          "modalities": {
+            "input": [
+              "text",
+              "image",
+              "pdf"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "packageName": "@ai-sdk/gateway"
+        },
         "anthropic/claude-sonnet-4.6": {
           "id": "anthropic/claude-sonnet-4.6",
           "name": "Claude Sonnet 4.6",
@@ -43950,6 +44141,26 @@ export const textModelCatalog: GeneratedTextCatalog = {
           "temperature": true,
           "releaseDate": "2026-02-24",
           "lastUpdated": "2026-03-06",
+          "modalities": {
+            "input": [
+              "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "packageName": "@ai-sdk/gateway"
+        },
+        "inception/mercury-coder-small": {
+          "id": "inception/mercury-coder-small",
+          "name": "Mercury Coder Small Beta",
+          "family": "mercury",
+          "attachment": false,
+          "reasoning": false,
+          "toolCall": true,
+          "temperature": true,
+          "releaseDate": "2025-02-26",
+          "lastUpdated": "2026-04-16",
           "modalities": {
             "input": [
               "text"
@@ -45010,6 +45221,28 @@ export const textModelCatalog: GeneratedTextCatalog = {
           "modalities": {
             "input": [
               "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "packageName": "@ai-sdk/gateway"
+        },
+        "zai/glm-5.1": {
+          "id": "zai/glm-5.1",
+          "name": "GLM 5.1",
+          "family": "glm",
+          "attachment": true,
+          "reasoning": true,
+          "toolCall": true,
+          "temperature": true,
+          "releaseDate": "2026-04-07",
+          "lastUpdated": "2026-04-16",
+          "modalities": {
+            "input": [
+              "text",
+              "image",
+              "pdf"
             ],
             "output": [
               "text"
@@ -46656,6 +46889,29 @@ export const textModelCatalog: GeneratedTextCatalog = {
             "input": [
               "image",
               "text"
+            ],
+            "output": [
+              "text"
+            ]
+          },
+          "packageName": "@ai-sdk/anthropic",
+          "api": "https://zenmux.ai/api/anthropic/v1"
+        },
+        "anthropic/claude-opus-4.7": {
+          "id": "anthropic/claude-opus-4.7",
+          "name": "Claude Opus 4.7",
+          "attachment": true,
+          "reasoning": true,
+          "toolCall": true,
+          "temperature": false,
+          "knowledge": "2026-01",
+          "releaseDate": "2026-04-16",
+          "lastUpdated": "2026-04-16",
+          "modalities": {
+            "input": [
+              "text",
+              "image",
+              "pdf"
             ],
             "output": [
               "text"

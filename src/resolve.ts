@@ -7,9 +7,8 @@ import { transcriptionModelCatalog } from './generated/transcription-model-catal
 import {
   AdapterConfigurationError,
   InvalidProviderModuleError,
-  UnknownProviderError,
 } from './errors'
-import type { GeneratedTextCatalog, GeneratedTranscriptionCatalog } from './internal/catalog-types'
+import { createModelDescriptor } from './internal/resolve-descriptor'
 import { buildUnresolvedModelLoadPlan } from './runtime/adapters'
 import { expandTemplate, loadModuleExports, resolveModulePlans } from './runtime/utils'
 import type {
@@ -33,86 +32,15 @@ const modelConfigInputSchema = z.object({
   model: z.string(),
 })
 
+const GENERATED_CATALOGS = {
+  textModelCatalog,
+  transcriptionModelCatalog,
+} as const
+
 interface BindingSource {
   specifier: string
   resolvedPath?: string
   exportName: string
-}
-
-function getCatalog(mode: ModelMode): GeneratedTextCatalog | GeneratedTranscriptionCatalog {
-  return mode === 'text' ? textModelCatalog : transcriptionModelCatalog
-}
-
-function createDescriptor(mode: ModelMode, config: ModelConfig): ModelDescriptor {
-  const provider = getCatalog(mode).providers[config.provider]
-
-  if (!provider) {
-    throw new UnknownProviderError(config.provider)
-  }
-
-  const model = provider.models[config.model]
-  const baseDescriptor = {
-    mode,
-    provider: provider.id,
-    providerName: provider.name,
-    providerDoc: provider.doc,
-    env: provider.env,
-    model: config.model,
-  }
-
-  if (!model) {
-    if (mode === 'transcription') {
-      return {
-        ...baseDescriptor,
-        catalogMatch: false,
-        name: config.model,
-        packageName: provider.packageName,
-        api: provider.api,
-      }
-    }
-
-    const textProvider = provider as GeneratedTextCatalog['providers'][string]
-
-    return {
-      ...baseDescriptor,
-      catalogMatch: false,
-      name: config.model,
-      packageName: textProvider.packageName,
-      api: textProvider.api,
-      shape: textProvider.shape,
-    }
-  }
-
-  if (mode === 'transcription') {
-    return {
-      ...baseDescriptor,
-      catalogMatch: true,
-      name: model.name,
-      packageName: model.packageName,
-      api: model.api,
-    }
-  }
-
-  const textModel = model as GeneratedTextCatalog['providers'][string]['models'][string]
-
-  return {
-    ...baseDescriptor,
-    catalogMatch: true,
-    name: textModel.name,
-    family: textModel.family,
-    attachment: textModel.attachment,
-    reasoning: textModel.reasoning,
-    toolCall: textModel.toolCall,
-    structuredOutput: textModel.structuredOutput,
-    temperature: textModel.temperature,
-    knowledge: textModel.knowledge,
-    releaseDate: textModel.releaseDate,
-    lastUpdated: textModel.lastUpdated,
-    modalities: textModel.modalities,
-    packageName: textModel.packageName,
-    api: textModel.api,
-    shape: textModel.shape,
-  }
 }
 
 function getCallable(
@@ -178,7 +106,7 @@ function resolveExecutionArgument(
  */
 export function resolveModel(mode: ModelMode, config: unknown): ModelDescriptor {
   const parsedConfig = modelConfigInputSchema.parse(config)
-  return createDescriptor(mode, parsedConfig)
+  return createModelDescriptor(GENERATED_CATALOGS, mode, parsedConfig)
 }
 
 /**
@@ -188,6 +116,10 @@ export function resolveModel(mode: ModelMode, config: unknown): ModelDescriptor 
  * This is the host-facing planning boundary for custom package loading policy.
  * It expands catalog templates such as `${ENV_VAR}`, applies adapter logic, and
  * merges runtime `packageOptions` into the planned operations.
+ *
+ * Transcription planning is strict: it does not reinterpret transcription
+ * selections as text-mode loads when a dedicated transcription adapter is
+ * unavailable.
  */
 export function buildModelLoadPlan(
   mode: ModelMode,
@@ -368,6 +300,9 @@ export async function loadTextModel(
 /**
  * Convenience helper that builds, resolves, and executes a transcription-model
  * load plan from a validated configuration.
+ *
+ * This helper is strict: it does not fall back to text-mode loading when the
+ * selected transcription entry lacks a dedicated transcription adapter.
  */
 export async function loadTranscriptionModel(
   config: unknown,

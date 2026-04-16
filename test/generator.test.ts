@@ -373,6 +373,22 @@ describe('createGeneratedCatalogFromProvidersDir', () => {
           '[provider]',
           'npm = "@ai-sdk/openai-compatible"',
         ].join('\n'),
+        'openai/models/audio-no-runtime.toml': [
+          'name = "Audio No Runtime"',
+          'attachment = false',
+          'reasoning = false',
+          'tool_call = false',
+          'temperature = true',
+          'release_date = "2026-01-03"',
+          'last_updated = "2026-01-04"',
+          '',
+          '[modalities]',
+          'input = ["audio"]',
+          'output = ["text"]',
+          '',
+          '[provider]',
+          'npm = "totally-unknown-provider"',
+        ].join('\n'),
         'groq/provider.toml': [
           'name = "Groq"',
           'npm = "@ai-sdk/groq"',
@@ -414,44 +430,56 @@ describe('createGeneratedCatalogFromProvidersDir', () => {
         ].join('\n'),
       },
       (providersDir) => {
-        const catalogs = createGeneratedCatalogsFromProvidersDir({
-          providersDir,
-          generatedAt: '2026-01-01T00:00:00.000Z',
-          ref: 'fixture',
-          parseToml(source) {
-            return Bun.TOML.parse(source)
+        const catalog = createGeneratedCatalogFromProvidersDir(
+          {
+            providersDir,
+            generatedAt: '2026-01-01T00:00:00.000Z',
+            ref: 'fixture',
+            parseToml(source) {
+              return Bun.TOML.parse(source)
+            },
           },
+          'transcription',
+        )
+
+        expect(catalog.providers.openai).toBeDefined()
+        expect(catalog.providers.compat).toBeDefined()
+        expect(catalog.providers.groq).toBeDefined()
+
+        expect(catalog.providers.openai?.models['audio-chat']).toEqual({
+          id: 'audio-chat',
+          name: 'Audio Chat',
+          packageName: '@ai-sdk/openai',
+          api: 'https://api.openai.example/v1',
+          supportedLoadModes: ['text', 'transcription'],
         })
-
-        expect(catalogs.textModelCatalog.providers.openai?.models['audio-chat']).toBeDefined()
-        expect(catalogs.textModelCatalog.providers.compat?.models['whisper-large-v3']).toBeDefined()
-
-        expect(
-          catalogs.transcriptionModelCatalog.providers.openai?.models['audio-chat'],
-        ).toBeDefined()
-        expect(
-          catalogs.transcriptionModelCatalog.providers.openai?.models['text-only'],
-        ).toBeUndefined()
-        expect(
-          catalogs.transcriptionModelCatalog.providers.openai?.models['audio-output'],
-        ).toBeUndefined()
-        expect(
-          catalogs.transcriptionModelCatalog.providers.openai?.models['audio-unsupported'],
-        ).toBeUndefined()
-        expect(
-          catalogs.transcriptionModelCatalog.providers.groq?.models['whisper-large-v3'],
-        ).toBeDefined()
-        expect(
-          catalogs.transcriptionModelCatalog.providers.groq?.models['whisper-large-v3'],
-        ).toEqual({
+        expect(catalog.providers.openai?.models['text-only']).toBeUndefined()
+        expect(catalog.providers.openai?.models['audio-output']).toBeUndefined()
+        expect(catalog.providers.openai?.models['audio-unsupported']).toEqual({
+          id: 'audio-unsupported',
+          name: 'Audio Unsupported',
+          packageName: '@ai-sdk/openai-compatible',
+          api: 'https://api.openai.example/v1',
+          supportedLoadModes: ['text'],
+        })
+        expect(catalog.providers.openai?.models['audio-no-runtime']).toBeUndefined()
+        expect(catalog.providers.groq?.models['whisper-large-v3']).toEqual({
           id: 'whisper-large-v3',
           name: 'Whisper Large v3',
           packageName: '@ai-sdk/groq',
+          supportedLoadModes: ['text', 'transcription'],
         })
-        expect(catalogs.transcriptionModelCatalog.providers.compat).toBeUndefined()
-        expect(catalogs.transcriptionModelCatalog.packageNames).toEqual([
+        expect(catalog.providers.compat?.models['whisper-large-v3']).toEqual({
+          id: 'whisper-large-v3',
+          name: 'Whisper Large v3',
+          packageName: '@ai-sdk/openai-compatible',
+          api: 'https://compat.example/v1',
+          supportedLoadModes: ['text'],
+        })
+        expect(catalog.packageNames).toEqual([
           '@ai-sdk/groq',
           '@ai-sdk/openai',
+          '@ai-sdk/openai-compatible',
         ])
       },
     )

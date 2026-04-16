@@ -1,4 +1,5 @@
 export type ModelShape = 'completions' | 'responses'
+export type SupportedLoadMode = 'text' | 'transcription'
 
 export interface GeneratedModelBase {
   id: string
@@ -24,7 +25,9 @@ export interface GeneratedTextModel extends GeneratedModelBase {
   shape?: ModelShape
 }
 
-export interface GeneratedTranscriptionModel extends GeneratedModelBase {}
+export interface GeneratedTranscriptionModel extends GeneratedModelBase {
+  supportedLoadModes: readonly SupportedLoadMode[]
+}
 
 export interface GeneratedCatalogProviderBase<MODEL> {
   id: string

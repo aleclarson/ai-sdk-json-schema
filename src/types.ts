@@ -1,4 +1,4 @@
-import type { ModelShape } from './internal/catalog-types'
+import type { ModelShape, SupportedLoadMode } from './internal/catalog-types'
 
 /**
  * Generic JSON Schema object emitted from the generated Zod schemas.
@@ -8,7 +8,7 @@ export type JsonSchemaObject = Record<string, unknown>
 /**
  * Runtime mode supported by the catalog and loading pipeline.
  */
-export type ModelMode = 'text' | 'transcription'
+export type ModelMode = SupportedLoadMode
 
 /**
  * Minimal JSON configuration accepted by the library.
@@ -35,6 +35,13 @@ export interface ModelDescriptor extends ModelConfig {
   env: readonly string[]
   catalogMatch: boolean
   name: string
+  /**
+   * Library runtime modes supported by the selected package.
+   *
+   * For transcription selections, this is package capability metadata only. It
+   * does not cause text-mode resolution to consult the transcription catalog.
+   */
+  supportedLoadModes: readonly ModelMode[]
   family?: string
   attachment?: boolean
   reasoning?: boolean
