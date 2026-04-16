@@ -3,7 +3,10 @@ import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 
-import { createGeneratedCatalogFromProvidersDir } from '../src/internal/generate-catalog'
+import {
+  createGeneratedCatalogFromProvidersDir,
+  createGeneratedCatalogsFromProvidersDir,
+} from '../src/internal/generate-catalog'
 
 async function withTempProvidersDir(
   files: Record<string, string>,
@@ -30,7 +33,7 @@ async function withTempProvidersDir(
 }
 
 describe('createGeneratedCatalogFromProvidersDir', () => {
-  test('keeps nested model ids, provider overrides, and third-party packages', async () => {
+  test('keeps nested model ids, provider overrides, and third-party packages for text mode', async () => {
     await withTempProvidersDir(
       {
         'alpha/provider.toml': [
@@ -133,7 +136,7 @@ describe('createGeneratedCatalogFromProvidersDir', () => {
     )
   })
 
-  test('fails when a provider package is unsupported', async () => {
+  test('fails when a text provider package is unsupported', async () => {
     await withTempProvidersDir(
       {
         'unsupported/provider.toml': [
@@ -166,12 +169,12 @@ describe('createGeneratedCatalogFromProvidersDir', () => {
               return Bun.TOML.parse(source)
             },
           }),
-        ).toThrow(/unsupported package/)
+        ).toThrow(/unsupported text package/)
       },
     )
   })
 
-  test('filters models by since using release_date or last_updated', async () => {
+  test('filters text models by since using release_date or last_updated', async () => {
     await withTempProvidersDir(
       {
         'alpha/provider.toml': [
@@ -238,15 +241,18 @@ describe('createGeneratedCatalogFromProvidersDir', () => {
         ].join('\n'),
       },
       (providersDir) => {
-        const catalog = createGeneratedCatalogFromProvidersDir({
-          providersDir,
-          generatedAt: '2026-01-01T00:00:00.000Z',
-          ref: 'fixture',
-          since: '2025-10-01',
-          parseToml(source) {
-            return Bun.TOML.parse(source)
+        const catalog = createGeneratedCatalogFromProvidersDir(
+          {
+            providersDir,
+            generatedAt: '2026-01-01T00:00:00.000Z',
+            ref: 'fixture',
+            since: '2025-10-01',
+            parseToml(source) {
+              return Bun.TOML.parse(source)
+            },
           },
-        })
+          'text',
+        )
 
         expect(catalog.providers.alpha?.models.old).toBeUndefined()
         expect(catalog.providers.alpha?.models.updated).toBeDefined()
@@ -258,24 +264,24 @@ describe('createGeneratedCatalogFromProvidersDir', () => {
     )
   })
 
-  test('keeps providers even when all catalog models are filtered out', async () => {
+  test('keeps transcription providers even when all retained models are filtered out', async () => {
     await withTempProvidersDir(
       {
-        'old-only/provider.toml': [
-          'name = "Old Only"',
-          'npm = "@ai-sdk/openai-compatible"',
-          'env = ["OLD_ONLY_API_KEY"]',
-          'doc = "https://old-only.example/docs"',
-          'api = "https://old-only.example/v1"',
+        'openai/provider.toml': [
+          'name = "OpenAI"',
+          'npm = "@ai-sdk/openai"',
+          'env = ["OPENAI_API_KEY"]',
+          'doc = "https://openai.example/docs"',
+          'api = "https://api.openai.example/v1"',
         ].join('\n'),
-        'old-only/models/legacy.toml': [
-          'name = "Legacy"',
+        'openai/models/text-only.toml': [
+          'name = "Text Only"',
           'attachment = false',
           'reasoning = false',
           'tool_call = true',
           'temperature = true',
-          'release_date = "2025-09-01"',
-          'last_updated = "2025-09-15"',
+          'release_date = "2026-01-01"',
+          'last_updated = "2026-01-02"',
           '',
           '[modalities]',
           'input = ["text"]',
@@ -283,19 +289,170 @@ describe('createGeneratedCatalogFromProvidersDir', () => {
         ].join('\n'),
       },
       (providersDir) => {
-        const catalog = createGeneratedCatalogFromProvidersDir({
+        const catalog = createGeneratedCatalogFromProvidersDir(
+          {
+            providersDir,
+            generatedAt: '2026-01-01T00:00:00.000Z',
+            ref: 'fixture',
+            parseToml(source) {
+              return Bun.TOML.parse(source)
+            },
+          },
+          'transcription',
+        )
+
+        expect(catalog.providers.openai).toBeDefined()
+        expect(catalog.providers.openai?.models).toEqual({})
+        expect(catalog.providers.openai?.packageName).toBe('@ai-sdk/openai')
+      },
+    )
+  })
+
+  test('creates a transcription catalog using the package heuristic', async () => {
+    await withTempProvidersDir(
+      {
+        'openai/provider.toml': [
+          'name = "OpenAI"',
+          'npm = "@ai-sdk/openai"',
+          'env = ["OPENAI_API_KEY"]',
+          'doc = "https://openai.example/docs"',
+          'api = "https://api.openai.example/v1"',
+        ].join('\n'),
+        'openai/models/audio-chat.toml': [
+          'name = "Audio Chat"',
+          'attachment = false',
+          'reasoning = false',
+          'tool_call = false',
+          'temperature = true',
+          'release_date = "2026-01-03"',
+          'last_updated = "2026-01-04"',
+          '',
+          '[modalities]',
+          'input = ["text", "audio"]',
+          'output = ["text"]',
+        ].join('\n'),
+        'openai/models/text-only.toml': [
+          'name = "Text Only"',
+          'attachment = false',
+          'reasoning = false',
+          'tool_call = false',
+          'temperature = true',
+          'release_date = "2026-01-03"',
+          'last_updated = "2026-01-04"',
+          '',
+          '[modalities]',
+          'input = ["text"]',
+          'output = ["text"]',
+        ].join('\n'),
+        'openai/models/audio-output.toml': [
+          'name = "Audio Output"',
+          'attachment = false',
+          'reasoning = false',
+          'tool_call = false',
+          'temperature = true',
+          'release_date = "2026-01-03"',
+          'last_updated = "2026-01-04"',
+          '',
+          '[modalities]',
+          'input = ["audio"]',
+          'output = ["audio"]',
+        ].join('\n'),
+        'openai/models/audio-unsupported.toml': [
+          'name = "Audio Unsupported"',
+          'attachment = false',
+          'reasoning = false',
+          'tool_call = false',
+          'temperature = true',
+          'release_date = "2026-01-03"',
+          'last_updated = "2026-01-04"',
+          '',
+          '[modalities]',
+          'input = ["audio"]',
+          'output = ["text"]',
+          '',
+          '[provider]',
+          'npm = "@ai-sdk/openai-compatible"',
+        ].join('\n'),
+        'groq/provider.toml': [
+          'name = "Groq"',
+          'npm = "@ai-sdk/groq"',
+          'env = ["GROQ_API_KEY"]',
+          'doc = "https://groq.example/docs"',
+        ].join('\n'),
+        'groq/models/whisper-large-v3.toml': [
+          'name = "Whisper Large v3"',
+          'attachment = false',
+          'reasoning = false',
+          'tool_call = false',
+          'temperature = false',
+          'release_date = "2026-01-03"',
+          'last_updated = "2026-01-04"',
+          '',
+          '[modalities]',
+          'input = ["audio"]',
+          'output = ["text"]',
+        ].join('\n'),
+        'compat/provider.toml': [
+          'name = "Compat"',
+          'npm = "@ai-sdk/openai-compatible"',
+          'env = ["COMPAT_API_KEY"]',
+          'doc = "https://compat.example/docs"',
+          'api = "https://compat.example/v1"',
+        ].join('\n'),
+        'compat/models/whisper-large-v3.toml': [
+          'name = "Whisper Large v3"',
+          'attachment = false',
+          'reasoning = false',
+          'tool_call = false',
+          'temperature = false',
+          'release_date = "2026-01-03"',
+          'last_updated = "2026-01-04"',
+          '',
+          '[modalities]',
+          'input = ["audio"]',
+          'output = ["text"]',
+        ].join('\n'),
+      },
+      (providersDir) => {
+        const catalogs = createGeneratedCatalogsFromProvidersDir({
           providersDir,
           generatedAt: '2026-01-01T00:00:00.000Z',
           ref: 'fixture',
-          since: '2025-10-01',
           parseToml(source) {
             return Bun.TOML.parse(source)
           },
         })
 
-        expect(catalog.providers['old-only']).toBeDefined()
-        expect(catalog.providers['old-only']?.models).toEqual({})
-        expect(catalog.providers['old-only']?.packageName).toBe('@ai-sdk/openai-compatible')
+        expect(catalogs.textModelCatalog.providers.openai?.models['audio-chat']).toBeDefined()
+        expect(catalogs.textModelCatalog.providers.compat?.models['whisper-large-v3']).toBeDefined()
+
+        expect(
+          catalogs.transcriptionModelCatalog.providers.openai?.models['audio-chat'],
+        ).toBeDefined()
+        expect(
+          catalogs.transcriptionModelCatalog.providers.openai?.models['text-only'],
+        ).toBeUndefined()
+        expect(
+          catalogs.transcriptionModelCatalog.providers.openai?.models['audio-output'],
+        ).toBeUndefined()
+        expect(
+          catalogs.transcriptionModelCatalog.providers.openai?.models['audio-unsupported'],
+        ).toBeUndefined()
+        expect(
+          catalogs.transcriptionModelCatalog.providers.groq?.models['whisper-large-v3'],
+        ).toBeDefined()
+        expect(
+          catalogs.transcriptionModelCatalog.providers.groq?.models['whisper-large-v3'],
+        ).toEqual({
+          id: 'whisper-large-v3',
+          name: 'Whisper Large v3',
+          packageName: '@ai-sdk/groq',
+        })
+        expect(catalogs.transcriptionModelCatalog.providers.compat).toBeUndefined()
+        expect(catalogs.transcriptionModelCatalog.packageNames).toEqual([
+          '@ai-sdk/groq',
+          '@ai-sdk/openai',
+        ])
       },
     )
   })

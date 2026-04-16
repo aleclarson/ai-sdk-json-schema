@@ -2,34 +2,33 @@ import process from 'node:process'
 
 import { z } from 'zod'
 
+import { textModelCatalog } from './generated/text-model-catalog'
+import { transcriptionModelCatalog } from './generated/transcription-model-catalog'
 import {
   AdapterConfigurationError,
   InvalidProviderModuleError,
   UnknownProviderError,
 } from './errors'
-import { generatedCatalog } from './generated/catalog'
-import { buildUnresolvedTextModelLoadPlan } from './runtime/adapters'
-import {
-  expandTemplate,
-  loadModuleExports,
-  resolveModulePlans,
-} from './runtime/utils'
+import type { GeneratedTextCatalog, GeneratedTranscriptionCatalog } from './internal/catalog-types'
+import { buildUnresolvedModelLoadPlan } from './runtime/adapters'
+import { expandTemplate, loadModuleExports, resolveModulePlans } from './runtime/utils'
 import type {
-  BuildTextModelLoadPlanOptions,
-  ExecuteResolvedTextModelLoadPlanOptions,
-  ExecuteUnresolvedTextModelLoadPlanOptions,
-  LoadTextModelOptions,
-  ResolvedTextModelLoadPlan,
-  ResolvedTextModelModule,
-  ResolveTextModelModulesOptions,
-  TextModelConfig,
-  TextModelDescriptor,
-  TextModelLoadArgument,
-  TextModelModulePlan,
-  UnresolvedTextModelLoadPlan,
+  BuildModelLoadPlanOptions,
+  ExecuteResolvedModelLoadPlanOptions,
+  ExecuteUnresolvedModelLoadPlanOptions,
+  LoadModelOptions,
+  ModelConfig,
+  ModelDescriptor,
+  ModelLoadArgument,
+  ModelMode,
+  ModelModulePlan,
+  ResolvedModelLoadPlan,
+  ResolvedModelModule,
+  ResolveModelModulesOptions,
+  UnresolvedModelLoadPlan,
 } from './types'
 
-const textModelConfigInputSchema = z.object({
+const modelConfigInputSchema = z.object({
   provider: z.string(),
   model: z.string(),
 })
@@ -40,8 +39,12 @@ interface BindingSource {
   exportName: string
 }
 
-function createDescriptor(config: TextModelConfig): TextModelDescriptor {
-  const provider = generatedCatalog.providers[config.provider]
+function getCatalog(mode: ModelMode): GeneratedTextCatalog | GeneratedTranscriptionCatalog {
+  return mode === 'text' ? textModelCatalog : transcriptionModelCatalog
+}
+
+function createDescriptor(mode: ModelMode, config: ModelConfig): ModelDescriptor {
+  const provider = getCatalog(mode).providers[config.provider]
 
   if (!provider) {
     throw new UnknownProviderError(config.provider)
@@ -49,6 +52,7 @@ function createDescriptor(config: TextModelConfig): TextModelDescriptor {
 
   const model = provider.models[config.model]
   const baseDescriptor = {
+    mode,
     provider: provider.id,
     providerName: provider.name,
     providerDoc: provider.doc,
@@ -57,33 +61,57 @@ function createDescriptor(config: TextModelConfig): TextModelDescriptor {
   }
 
   if (!model) {
+    if (mode === 'transcription') {
+      return {
+        ...baseDescriptor,
+        catalogMatch: false,
+        name: config.model,
+        packageName: provider.packageName,
+        api: provider.api,
+      }
+    }
+
+    const textProvider = provider as GeneratedTextCatalog['providers'][string]
+
     return {
       ...baseDescriptor,
       catalogMatch: false,
       name: config.model,
-      packageName: provider.packageName,
-      api: provider.api,
-      shape: provider.shape,
+      packageName: textProvider.packageName,
+      api: textProvider.api,
+      shape: textProvider.shape,
     }
   }
+
+  if (mode === 'transcription') {
+    return {
+      ...baseDescriptor,
+      catalogMatch: true,
+      name: model.name,
+      packageName: model.packageName,
+      api: model.api,
+    }
+  }
+
+  const textModel = model as GeneratedTextCatalog['providers'][string]['models'][string]
 
   return {
     ...baseDescriptor,
     catalogMatch: true,
-    name: model.name,
-    family: model.family,
-    attachment: model.attachment,
-    reasoning: model.reasoning,
-    toolCall: model.toolCall,
-    structuredOutput: model.structuredOutput,
-    temperature: model.temperature,
-    knowledge: model.knowledge,
-    releaseDate: model.releaseDate,
-    lastUpdated: model.lastUpdated,
-    modalities: model.modalities,
-    packageName: model.packageName,
-    api: model.api,
-    shape: model.shape,
+    name: textModel.name,
+    family: textModel.family,
+    attachment: textModel.attachment,
+    reasoning: textModel.reasoning,
+    toolCall: textModel.toolCall,
+    structuredOutput: textModel.structuredOutput,
+    temperature: textModel.temperature,
+    knowledge: textModel.knowledge,
+    releaseDate: textModel.releaseDate,
+    lastUpdated: textModel.lastUpdated,
+    modalities: textModel.modalities,
+    packageName: textModel.packageName,
+    api: textModel.api,
+    shape: textModel.shape,
   }
 }
 
@@ -104,9 +132,9 @@ function getCallable(
 }
 
 async function loadModuleForExecution(
-  module: TextModelModulePlan | ResolvedTextModelModule,
+  module: ModelModulePlan | ResolvedModelModule,
   loadModule:
-    | ((module: TextModelModulePlan | ResolvedTextModelModule) => Promise<Record<string, unknown>>)
+    | ((module: ModelModulePlan | ResolvedModelModule) => Promise<Record<string, unknown>>)
     | undefined,
 ): Promise<Record<string, unknown>> {
   if (loadModule) {
@@ -118,14 +146,14 @@ async function loadModuleForExecution(
   }
 
   throw new TypeError(
-    'executeTextModelLoadPlan requires options.loadModule when plan.stage is "unresolved"',
+    'executeModelLoadPlan requires options.loadModule when plan.stage is "unresolved"',
   )
 }
 
 function resolveExecutionArgument(
   adapterId: string,
   bindings: Map<string, unknown>,
-  argument: TextModelLoadArgument,
+  argument: ModelLoadArgument,
 ): unknown {
   if (argument.kind === 'value') {
     return argument.value
@@ -148,35 +176,38 @@ function resolveExecutionArgument(
  * This performs no filesystem resolution and does not import provider packages.
  * Unknown model ids are allowed and fall back to provider defaults.
  */
-export function resolveTextModel(config: unknown): TextModelDescriptor {
-  const parsedConfig = textModelConfigInputSchema.parse(config)
-  return createDescriptor(parsedConfig)
+export function resolveModel(mode: ModelMode, config: unknown): ModelDescriptor {
+  const parsedConfig = modelConfigInputSchema.parse(config)
+  return createDescriptor(mode, parsedConfig)
 }
 
 /**
- * Builds the adapter-aware runtime plan required to load a validated text
- * model, without resolving modules from disk or importing anything.
+ * Builds the adapter-aware runtime plan required to load a validated model,
+ * without resolving modules from disk or importing anything.
  *
  * This is the host-facing planning boundary for custom package loading policy.
  * It expands catalog templates such as `${ENV_VAR}`, applies adapter logic, and
  * merges runtime `packageOptions` into the planned operations.
  */
-export function buildTextModelLoadPlan(
+export function buildModelLoadPlan(
+  mode: ModelMode,
   config: unknown,
-  options: BuildTextModelLoadPlanOptions = {},
-): UnresolvedTextModelLoadPlan {
-  const descriptor = resolveTextModel(config)
+  options: BuildModelLoadPlanOptions = {},
+): UnresolvedModelLoadPlan {
+  const descriptor = resolveModel(mode, config)
   const expandedDescriptor = {
     ...descriptor,
     api: expandTemplate(descriptor.api, options.env),
   }
-  const unresolvedPlan = buildUnresolvedTextModelLoadPlan(
+  const unresolvedPlan = buildUnresolvedModelLoadPlan(
+    mode,
     expandedDescriptor,
     options.packageOptions,
   )
 
   return {
     stage: 'unresolved',
+    mode,
     descriptor: expandedDescriptor,
     adapterId: unresolvedPlan.adapterId,
     modules: unresolvedPlan.modules,
@@ -192,12 +223,13 @@ export function buildTextModelLoadPlan(
  * Use this only after the host has decided that package resolution should be
  * anchored to a concrete dependency root.
  */
-export function resolveTextModelModules(
-  plan: UnresolvedTextModelLoadPlan,
-  options: ResolveTextModelModulesOptions,
-): ResolvedTextModelLoadPlan {
+export function resolveModelModules(
+  plan: UnresolvedModelLoadPlan,
+  options: ResolveModelModulesOptions,
+): ResolvedModelLoadPlan {
   return {
     stage: 'resolved',
+    mode: plan.mode,
     descriptor: plan.descriptor,
     adapterId: plan.adapterId,
     modules: resolveModulePlans(options.installationRoot, plan.modules),
@@ -207,25 +239,25 @@ export function resolveTextModelModules(
 }
 
 /**
- * Executes a text-model load plan and returns the constructed model instance.
+ * Executes a model load plan and returns the constructed model instance.
  *
  * Unresolved plans require a host-provided `loadModule` callback. Resolved
  * plans use the callback when provided, otherwise they import the planned file
  * URLs directly.
  */
-export function executeTextModelLoadPlan(
-  plan: UnresolvedTextModelLoadPlan,
-  options: ExecuteUnresolvedTextModelLoadPlanOptions,
+export function executeModelLoadPlan(
+  plan: UnresolvedModelLoadPlan,
+  options: ExecuteUnresolvedModelLoadPlanOptions,
 ): Promise<unknown>
-export function executeTextModelLoadPlan(
-  plan: ResolvedTextModelLoadPlan,
-  options?: ExecuteResolvedTextModelLoadPlanOptions,
+export function executeModelLoadPlan(
+  plan: ResolvedModelLoadPlan,
+  options?: ExecuteResolvedModelLoadPlanOptions,
 ): Promise<unknown>
-export async function executeTextModelLoadPlan(
-  plan: UnresolvedTextModelLoadPlan | ResolvedTextModelLoadPlan,
+export async function executeModelLoadPlan(
+  plan: UnresolvedModelLoadPlan | ResolvedModelLoadPlan,
   options:
-    | ExecuteResolvedTextModelLoadPlanOptions
-    | ExecuteUnresolvedTextModelLoadPlanOptions = {},
+    | ExecuteResolvedModelLoadPlanOptions
+    | ExecuteUnresolvedModelLoadPlanOptions = {},
 ): Promise<unknown> {
   const modulesByRole = new Map(plan.modules.map((module) => [module.role, module]))
   const exportsByRole = new Map<string, Record<string, unknown>>()
@@ -236,9 +268,7 @@ export async function executeTextModelLoadPlan(
       await loadModuleForExecution(
         module,
         options.loadModule as
-          | ((module: TextModelModulePlan | ResolvedTextModelModule) => Promise<
-              Record<string, unknown>
-            >)
+          | ((module: ModelModulePlan | ResolvedModelModule) => Promise<Record<string, unknown>>)
           | undefined,
       ),
     )
@@ -283,7 +313,7 @@ export async function executeTextModelLoadPlan(
     )
 
     if (operation.methodName) {
-      if (!target || typeof target !== 'object') {
+      if (!target || (typeof target !== 'object' && typeof target !== 'function')) {
         throw new InvalidProviderModuleError({
           specifier: targetSource.specifier,
           resolvedPath: targetSource.resolvedPath,
@@ -322,19 +352,31 @@ export async function executeTextModelLoadPlan(
 /**
  * Convenience helper that builds, resolves, and executes a text-model load
  * plan from a validated configuration.
- *
- * This is the simplest path for consumers that do not need custom provider
- * loading policy. Hosts that bundle some providers or install on demand should
- * use the three lower-level stages directly.
  */
 export async function loadTextModel(
   config: unknown,
-  options: LoadTextModelOptions = {},
+  options: LoadModelOptions = {},
 ): Promise<unknown> {
-  const plan = buildTextModelLoadPlan(config, options)
-  const resolvedPlan = resolveTextModelModules(plan, {
+  const plan = buildModelLoadPlan('text', config, options)
+  const resolvedPlan = resolveModelModules(plan, {
     installationRoot: options.installationRoot ?? process.cwd(),
   })
 
-  return executeTextModelLoadPlan(resolvedPlan)
+  return executeModelLoadPlan(resolvedPlan)
+}
+
+/**
+ * Convenience helper that builds, resolves, and executes a transcription-model
+ * load plan from a validated configuration.
+ */
+export async function loadTranscriptionModel(
+  config: unknown,
+  options: LoadModelOptions = {},
+): Promise<unknown> {
+  const plan = buildModelLoadPlan('transcription', config, options)
+  const resolvedPlan = resolveModelModules(plan, {
+    installationRoot: options.installationRoot ?? process.cwd(),
+  })
+
+  return executeModelLoadPlan(resolvedPlan)
 }

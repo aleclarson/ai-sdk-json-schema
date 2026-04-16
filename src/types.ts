@@ -6,24 +6,30 @@ import type { ModelShape } from './internal/catalog-types'
 export type JsonSchemaObject = Record<string, unknown>
 
 /**
+ * Runtime mode supported by the catalog and loading pipeline.
+ */
+export type ModelMode = 'text' | 'transcription'
+
+/**
  * Minimal JSON configuration accepted by the library.
  *
  * Credentials and package-specific factory options are intentionally excluded.
  */
-export interface TextModelConfig {
+export interface ModelConfig {
   provider: string
   model: string
 }
 
 /**
- * Resolved metadata for a validated text-model selection.
+ * Resolved metadata for a validated model selection.
  *
- * Returned by {@link resolveTextModel} and embedded in text-model load plans.
+ * Returned by {@link resolveModel} and embedded in model load plans.
  *
- * When `catalogMatch` is `false`, the model id was not present in the generated
- * catalog and provider defaults were used for runtime resolution.
+ * When `catalogMatch` is `false`, the model id was not present in the selected
+ * generated catalog and provider defaults were used for runtime resolution.
  */
-export interface TextModelDescriptor extends TextModelConfig {
+export interface ModelDescriptor extends ModelConfig {
+  mode: ModelMode
   providerName: string
   providerDoc: string
   env: readonly string[]
@@ -48,9 +54,9 @@ export interface TextModelDescriptor extends TextModelConfig {
 }
 
 /**
- * A module import target inside a text-model load plan.
+ * A module import target inside a model load plan.
  */
-export interface TextModelModulePlan {
+export interface ModelModulePlan {
   role: string
   specifier: string
   /**
@@ -61,9 +67,9 @@ export interface TextModelModulePlan {
 }
 
 /**
- * A fully resolved module import target inside a text-model load plan.
+ * A fully resolved module import target inside a model load plan.
  */
-export interface ResolvedTextModelModule extends TextModelModulePlan {
+export interface ResolvedModelModule extends ModelModulePlan {
   resolvedPath: string
   fileUrl: string
 }
@@ -71,7 +77,7 @@ export interface ResolvedTextModelModule extends TextModelModulePlan {
 /**
  * References a previously created binding inside a load-plan operation.
  */
-export interface TextModelBindingArgument {
+export interface ModelBindingArgument {
   kind: 'binding'
   binding: string
 }
@@ -79,7 +85,7 @@ export interface TextModelBindingArgument {
 /**
  * Inlines a literal value inside a load-plan operation.
  */
-export interface TextModelValueArgument {
+export interface ModelValueArgument {
   kind: 'value'
   value: unknown
 }
@@ -87,12 +93,12 @@ export interface TextModelValueArgument {
 /**
  * Argument payload used by load-plan operations.
  */
-export type TextModelLoadArgument = TextModelBindingArgument | TextModelValueArgument
+export type ModelLoadArgument = ModelBindingArgument | ModelValueArgument
 
 /**
  * Creates a named binding by calling an exported factory from a resolved module.
  */
-export interface TextModelCreateBindingOperation {
+export interface ModelCreateBindingOperation {
   kind: 'create-binding'
   binding: string
   moduleRole: string
@@ -102,90 +108,90 @@ export interface TextModelCreateBindingOperation {
 /**
  * Invokes a previously created binding, optionally through one of its methods.
  */
-export interface TextModelInvokeBindingOperation {
+export interface ModelInvokeBindingOperation {
   kind: 'invoke-binding'
   binding: string
   targetBinding: string
   methodName?: string
-  args: TextModelLoadArgument[]
+  args: ModelLoadArgument[]
 }
 
 /**
- * The normalized execution steps needed to construct a text model.
+ * The normalized execution steps needed to construct a model instance.
  */
-export type TextModelLoadOperation =
-  | TextModelCreateBindingOperation
-  | TextModelInvokeBindingOperation
+export type ModelLoadOperation = ModelCreateBindingOperation | ModelInvokeBindingOperation
 
 /**
  * Adapter-aware runtime plan that has not been resolved against the filesystem.
  */
-export interface UnresolvedTextModelLoadPlan {
+export interface UnresolvedModelLoadPlan {
   /**
-   * Discriminant used by {@link executeTextModelLoadPlan}.
+   * Discriminant used by {@link executeModelLoadPlan}.
    */
   stage: 'unresolved'
-  descriptor: TextModelDescriptor
+  mode: ModelMode
+  descriptor: ModelDescriptor
   adapterId: string
-  modules: TextModelModulePlan[]
-  operations: TextModelLoadOperation[]
+  modules: ModelModulePlan[]
+  operations: ModelLoadOperation[]
   resultBinding: string
 }
 
 /**
- * Filesystem-resolved runtime plan for loading a configured text model.
+ * Filesystem-resolved runtime plan for loading a configured model.
  */
-export interface ResolvedTextModelLoadPlan {
+export interface ResolvedModelLoadPlan {
   /**
-   * Discriminant used by {@link executeTextModelLoadPlan}.
+   * Discriminant used by {@link executeModelLoadPlan}.
    */
   stage: 'resolved'
-  descriptor: TextModelDescriptor
+  mode: ModelMode
+  descriptor: ModelDescriptor
   adapterId: string
-  modules: ResolvedTextModelModule[]
-  operations: TextModelLoadOperation[]
+  modules: ResolvedModelModule[]
+  operations: ModelLoadOperation[]
   resultBinding: string
 }
 
 /**
- * Runtime-only options used while building a text-model load plan.
+ * Runtime-only options used while building a model load plan.
  */
-export interface BuildTextModelLoadPlanOptions {
+export interface BuildModelLoadPlanOptions {
   env?: Record<string, string | undefined>
   packageOptions?: unknown
 }
 
 /**
- * Runtime-only options used while resolving a text-model load plan.
+ * Runtime-only options used while resolving a model load plan.
  */
-export interface ResolveTextModelModulesOptions {
+export interface ResolveModelModulesOptions {
   installationRoot: string
 }
 
 /**
- * Runtime-only options used while executing an unresolved text-model load plan.
+ * Runtime-only options used while executing an unresolved model load plan.
  */
-export interface ExecuteUnresolvedTextModelLoadPlanOptions {
+export interface ExecuteUnresolvedModelLoadPlanOptions {
   /**
    * Host-supplied module loader used when the plan has not been resolved against
    * the filesystem.
    */
-  loadModule: (module: TextModelModulePlan) => Promise<Record<string, unknown>>
+  loadModule: (module: ModelModulePlan) => Promise<Record<string, unknown>>
 }
 
 /**
- * Runtime-only options used while executing a resolved text-model load plan.
+ * Runtime-only options used while executing a resolved model load plan.
  */
-export interface ExecuteResolvedTextModelLoadPlanOptions {
+export interface ExecuteResolvedModelLoadPlanOptions {
   /**
    * Optional override for the default file-URL-based module loading path.
    */
-  loadModule?: (module: ResolvedTextModelModule) => Promise<Record<string, unknown>>
+  loadModule?: (module: ResolvedModelModule) => Promise<Record<string, unknown>>
 }
 
 /**
- * Runtime-only options used by the convenience `loadTextModel` helper.
+ * Runtime-only options used by the convenience loader helpers.
  */
-export interface LoadTextModelOptions extends BuildTextModelLoadPlanOptions {
+export interface LoadModelOptions extends BuildModelLoadPlanOptions {
   installationRoot?: string
 }

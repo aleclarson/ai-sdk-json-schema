@@ -8,10 +8,7 @@ import {
   MissingProviderPackageError,
   MissingTemplateVariableError,
 } from '../errors'
-import type {
-  ResolvedTextModelModule,
-  TextModelModulePlan,
-} from '../types'
+import type { ModelModulePlan, ResolvedModelModule } from '../types'
 
 export function isPlainObject(value: unknown): value is Record<string, unknown> {
   if (typeof value !== 'object' || value === null) {
@@ -71,8 +68,8 @@ export function expandTemplate(
 
 export function resolveModulePlans(
   installationRoot: string,
-  modules: TextModelModulePlan[],
-): ResolvedTextModelModule[] {
+  modules: ModelModulePlan[],
+): ResolvedModelModule[] {
   const anchorPath = path.join(installationRoot, 'package.json')
   const require = createRequire(anchorPath)
 
@@ -100,7 +97,7 @@ export function resolveModulePlans(
 }
 
 export async function loadModuleExports(
-  modulePlan: ResolvedTextModelModule,
+  modulePlan: ResolvedModelModule,
 ): Promise<Record<string, unknown>> {
   const loaded = await import(modulePlan.fileUrl)
 

@@ -1,26 +1,24 @@
 import { AdapterConfigurationError } from '../errors'
-import type {
-  TextModelDescriptor,
-  TextModelLoadOperation,
-  TextModelModulePlan,
-} from '../types'
+import { generatedCallableAdapterConfigs } from '../generated/callable-adapters'
+import type { ModelDescriptor, ModelLoadOperation, ModelMode, ModelModulePlan } from '../types'
 import { isPlainObject, mergeOptions } from './utils'
 
-export interface UnresolvedTextModelLoadPlan {
+export interface UnresolvedAdapterLoadPlan {
   adapterId: string
-  modules: TextModelModulePlan[]
-  operations: TextModelLoadOperation[]
+  modules: ModelModulePlan[]
+  operations: ModelLoadOperation[]
   resultBinding: string
 }
 
 interface AdapterBuildContext {
-  descriptor: TextModelDescriptor
+  descriptor: ModelDescriptor
   packageOptions: unknown
 }
 
-interface TextModelAdapter {
+interface ModelAdapter {
   readonly id: string
-  buildPlan(context: AdapterBuildContext): UnresolvedTextModelLoadPlan
+  buildTextPlan?(context: AdapterBuildContext): UnresolvedAdapterLoadPlan
+  buildTranscriptionPlan?(context: AdapterBuildContext): UnresolvedAdapterLoadPlan
 }
 
 interface GenericAdapterOptions {
@@ -38,11 +36,18 @@ interface CallableAdapterConfig {
   id: string
   moduleSpecifier?: string
   createExportName: string
-  methodName?(descriptor: TextModelDescriptor): string | undefined
-  defaultFactoryOptions?(descriptor: TextModelDescriptor): Record<string, unknown> | undefined
+  textMethodName?(descriptor: ModelDescriptor): string | undefined
+  transcriptionMethodName?(descriptor: ModelDescriptor): string | undefined
+  defaultFactoryOptions?(descriptor: ModelDescriptor): Record<string, unknown> | undefined
 }
 
+const BUILD_METHOD_BY_MODE = {
+  text: 'buildTextPlan',
+  transcription: 'buildTranscriptionPlan',
+} as const satisfies Record<ModelMode, keyof ModelAdapter>
+
 const PACKAGES_WITH_BASE_URL = new Set([
+  '@ai-sdk/alibaba',
   '@ai-sdk/anthropic',
   '@ai-sdk/azure',
   '@ai-sdk/cerebras',
@@ -84,7 +89,7 @@ function createModelArguments(modelId: string, modelOptions: Record<string, unkn
 }
 
 function getDefaultFactoryOptions(
-  descriptor: TextModelDescriptor,
+  descriptor: ModelDescriptor,
 ): Record<string, unknown> | undefined {
   if (descriptor.api === undefined) {
     return undefined
@@ -99,7 +104,10 @@ function getDefaultFactoryOptions(
   return undefined
 }
 
-function normalizeGenericAdapterOptions(packageOptions: unknown): GenericAdapterOptions {
+function normalizeGenericAdapterOptions(
+  packageOptions: unknown,
+  mode: ModelMode,
+): GenericAdapterOptions {
   if (!isPlainObject(packageOptions)) {
     return {}
   }
@@ -109,10 +117,11 @@ function normalizeGenericAdapterOptions(packageOptions: unknown): GenericAdapter
     : isPlainObject(packageOptions.provider)
       ? packageOptions.provider
       : undefined
+  const modelAlias = mode === 'text' ? 'languageModel' : 'transcriptionModel'
   const modelCandidate = isPlainObject(packageOptions.model)
     ? packageOptions.model
-    : isPlainObject(packageOptions.languageModel)
-      ? packageOptions.languageModel
+    : isPlainObject(packageOptions[modelAlias])
+      ? packageOptions[modelAlias]
       : undefined
 
   if (factoryCandidate || modelCandidate) {
@@ -155,51 +164,74 @@ function normalizeAiGatewayAdapterOptions(packageOptions: unknown): AiGatewayAda
   }
 }
 
-function createCallableAdapter(config: CallableAdapterConfig): TextModelAdapter {
+function createCallablePlan(
+  config: CallableAdapterConfig,
+  descriptor: ModelDescriptor,
+  packageOptions: unknown,
+  mode: ModelMode,
+  methodNameResolver: ((descriptor: ModelDescriptor) => string | undefined) | undefined,
+): UnresolvedAdapterLoadPlan {
+  const normalizedOptions = normalizeGenericAdapterOptions(packageOptions, mode)
+  const defaultFactoryOptions = mergeOptions(
+    getDefaultFactoryOptions(descriptor),
+    config.defaultFactoryOptions?.(descriptor),
+  )
+  const factoryOptions = mergeOptions(defaultFactoryOptions, normalizedOptions.factoryOptions)
+  const methodName = methodNameResolver?.(descriptor)
+
+  return {
+    adapterId: config.id,
+    modules: [
+      {
+        role: 'provider-factory',
+        specifier: config.moduleSpecifier ?? config.id,
+        packageName: config.id,
+        exportName: config.createExportName,
+      },
+    ],
+    operations: [
+      {
+        kind: 'create-binding',
+        binding: 'provider',
+        moduleRole: 'provider-factory',
+        options: factoryOptions,
+      },
+      {
+        kind: 'invoke-binding',
+        binding: 'model',
+        targetBinding: 'provider',
+        methodName,
+        args: createModelArguments(descriptor.model, normalizedOptions.modelOptions),
+      },
+    ],
+    resultBinding: 'model',
+  }
+}
+
+function createCallableAdapter(config: CallableAdapterConfig): ModelAdapter {
   return {
     id: config.id,
-    buildPlan({ descriptor, packageOptions }) {
-      const normalizedOptions = normalizeGenericAdapterOptions(packageOptions)
-      const defaultFactoryOptions = mergeOptions(
-        getDefaultFactoryOptions(descriptor),
-        config.defaultFactoryOptions?.(descriptor),
-      )
-      const factoryOptions = mergeOptions(defaultFactoryOptions, normalizedOptions.factoryOptions)
-      const methodName = config.methodName?.(descriptor)
-
-      return {
-        adapterId: config.id,
-        modules: [
-          {
-            role: 'provider-factory',
-            specifier: config.moduleSpecifier ?? config.id,
-            packageName: config.id,
-            exportName: config.createExportName,
-          },
-        ],
-        operations: [
-          {
-            kind: 'create-binding',
-            binding: 'provider',
-            moduleRole: 'provider-factory',
-            options: factoryOptions,
-          },
-          {
-            kind: 'invoke-binding',
-            binding: 'textModel',
-            targetBinding: 'provider',
-            methodName,
-            args: createModelArguments(descriptor.model, normalizedOptions.modelOptions),
-          },
-        ],
-        resultBinding: 'textModel',
-      }
+    buildTextPlan({ descriptor, packageOptions }) {
+      return createCallablePlan(config, descriptor, packageOptions, 'text', config.textMethodName)
     },
+    ...(config.transcriptionMethodName
+      ? {
+          buildTranscriptionPlan({ descriptor, packageOptions }: AdapterBuildContext) {
+            return createCallablePlan(
+              config,
+              descriptor,
+              packageOptions,
+              'transcription',
+              config.transcriptionMethodName,
+            )
+          },
+        }
+      : {}),
   }
 }
 
 function getOpenAICompatibleFactoryOptions(
-  descriptor: TextModelDescriptor,
+  descriptor: ModelDescriptor,
 ): Record<string, unknown> | undefined {
   return {
     name: descriptor.provider,
@@ -208,7 +240,7 @@ function getOpenAICompatibleFactoryOptions(
   }
 }
 
-function getOpenAICompatibleMethodName(descriptor: TextModelDescriptor): string | undefined {
+function getOpenAICompatibleTextMethodName(descriptor: ModelDescriptor): string | undefined {
   if (descriptor.shape === 'completions') {
     return 'completionModel'
   }
@@ -216,7 +248,7 @@ function getOpenAICompatibleMethodName(descriptor: TextModelDescriptor): string 
   return undefined
 }
 
-function getOpenAIMethodName(descriptor: TextModelDescriptor): string | undefined {
+function getOpenAITextMethodName(descriptor: ModelDescriptor): string | undefined {
   if (descriptor.shape === 'completions') {
     return 'completion'
   }
@@ -224,7 +256,7 @@ function getOpenAIMethodName(descriptor: TextModelDescriptor): string | undefine
   return undefined
 }
 
-function getOpenRouterMethodName(descriptor: TextModelDescriptor): string | undefined {
+function getOpenRouterTextMethodName(descriptor: ModelDescriptor): string | undefined {
   if (descriptor.shape === 'completions') {
     return 'completion'
   }
@@ -232,7 +264,7 @@ function getOpenRouterMethodName(descriptor: TextModelDescriptor): string | unde
   return undefined
 }
 
-function getAihubmixMethodName(descriptor: TextModelDescriptor): string | undefined {
+function getAihubmixTextMethodName(descriptor: ModelDescriptor): string | undefined {
   if (descriptor.shape === 'completions') {
     return 'completion'
   }
@@ -240,119 +272,52 @@ function getAihubmixMethodName(descriptor: TextModelDescriptor): string | undefi
   return undefined
 }
 
-const CALLABLE_ADAPTERS = [
-  createCallableAdapter({
-    id: '@ai-sdk/amazon-bedrock',
-    createExportName: 'createAmazonBedrock',
-  }),
-  createCallableAdapter({
-    id: '@ai-sdk/anthropic',
-    createExportName: 'createAnthropic',
-  }),
-  createCallableAdapter({
-    id: '@ai-sdk/azure',
-    createExportName: 'createAzure',
-  }),
-  createCallableAdapter({
-    id: '@ai-sdk/cerebras',
-    createExportName: 'createCerebras',
-  }),
-  createCallableAdapter({
-    id: '@ai-sdk/cohere',
-    createExportName: 'createCohere',
-  }),
-  createCallableAdapter({
-    id: '@ai-sdk/deepinfra',
-    createExportName: 'createDeepInfra',
-  }),
-  createCallableAdapter({
-    id: '@ai-sdk/gateway',
-    createExportName: 'createGateway',
-  }),
-  createCallableAdapter({
-    id: '@ai-sdk/google',
-    createExportName: 'createGoogleGenerativeAI',
-  }),
-  createCallableAdapter({
-    id: '@ai-sdk/google-vertex',
-    createExportName: 'createVertex',
-  }),
-  createCallableAdapter({
-    id: '@ai-sdk/google-vertex/anthropic',
-    createExportName: 'createVertexAnthropic',
-  }),
-  createCallableAdapter({
-    id: '@ai-sdk/groq',
-    createExportName: 'createGroq',
-  }),
-  createCallableAdapter({
-    id: '@ai-sdk/mistral',
-    createExportName: 'createMistral',
-  }),
-  createCallableAdapter({
-    id: '@ai-sdk/openai',
-    createExportName: 'createOpenAI',
-    methodName: getOpenAIMethodName,
-  }),
-  createCallableAdapter({
-    id: '@ai-sdk/openai-compatible',
-    createExportName: 'createOpenAICompatible',
-    methodName: getOpenAICompatibleMethodName,
+function getTranscriptionMethodName(): string {
+  return 'transcription'
+}
+
+const CALLABLE_ADAPTER_OVERRIDES: Record<string, Partial<CallableAdapterConfig>> = {
+  '@ai-sdk/openai': {
+    textMethodName: getOpenAITextMethodName,
+  },
+  '@ai-sdk/openai-compatible': {
+    textMethodName: getOpenAICompatibleTextMethodName,
     defaultFactoryOptions: getOpenAICompatibleFactoryOptions,
-  }),
-  createCallableAdapter({
-    id: '@ai-sdk/perplexity',
-    createExportName: 'createPerplexity',
-  }),
-  createCallableAdapter({
-    id: '@ai-sdk/togetherai',
-    createExportName: 'createTogetherAI',
-  }),
-  createCallableAdapter({
-    id: '@ai-sdk/vercel',
-    createExportName: 'createVercel',
-  }),
-  createCallableAdapter({
-    id: '@ai-sdk/xai',
-    createExportName: 'createXai',
-  }),
-  createCallableAdapter({
-    id: '@aihubmix/ai-sdk-provider',
-    createExportName: 'createAihubmix',
-    methodName: getAihubmixMethodName,
-  }),
-  createCallableAdapter({
-    id: '@jerome-benoit/sap-ai-provider-v2',
-    createExportName: 'createSAPAIProvider',
-  }),
-  createCallableAdapter({
-    id: '@openrouter/ai-sdk-provider',
-    createExportName: 'createOpenRouter',
-    methodName: getOpenRouterMethodName,
-    defaultFactoryOptions(descriptor) {
+  },
+  '@aihubmix/ai-sdk-provider': {
+    textMethodName: getAihubmixTextMethodName,
+  },
+  '@openrouter/ai-sdk-provider': {
+    textMethodName: getOpenRouterTextMethodName,
+    defaultFactoryOptions(descriptor: ModelDescriptor) {
       return mergeOptions(getDefaultFactoryOptions(descriptor), {
         compatibility: 'strict',
       })
     },
-  }),
-  createCallableAdapter({
-    id: 'gitlab-ai-provider',
-    createExportName: 'createGitLab',
-  }),
-  createCallableAdapter({
-    id: 'venice-ai-sdk-provider',
-    createExportName: 'createVenice',
-  }),
-] as const
+  },
+}
 
-function getAiGatewayUpstream(descriptor: TextModelDescriptor) {
+const CALLABLE_ADAPTERS = generatedCallableAdapterConfigs.map((config) =>
+  createCallableAdapter({
+    id: config.id,
+    createExportName: config.createExportName,
+    ...CALLABLE_ADAPTER_OVERRIDES[config.id],
+    ...(config.supportsTranscription
+      ? {
+          transcriptionMethodName: getTranscriptionMethodName,
+        }
+      : {}),
+  }),
+)
+
+function getAiGatewayUpstream(descriptor: ModelDescriptor) {
   const [prefix] = descriptor.model.split('/', 1)
 
   if (prefix === 'openai') {
     return {
       specifier: 'ai-gateway-provider/providers/openai',
       exportName: 'createOpenAI',
-      methodName: getOpenAIMethodName(descriptor),
+      methodName: getOpenAITextMethodName(descriptor),
       defaultFactoryOptions: getDefaultFactoryOptions(descriptor),
     }
   }
@@ -370,7 +335,7 @@ function getAiGatewayUpstream(descriptor: TextModelDescriptor) {
     return {
       specifier: 'ai-gateway-provider/providers/unified',
       exportName: 'createUnified',
-      methodName: getOpenAICompatibleMethodName(descriptor),
+      methodName: getOpenAICompatibleTextMethodName(descriptor),
       defaultFactoryOptions: getOpenAICompatibleFactoryOptions(descriptor),
     }
   }
@@ -381,9 +346,9 @@ function getAiGatewayUpstream(descriptor: TextModelDescriptor) {
   )
 }
 
-const aiGatewayAdapter: TextModelAdapter = {
+const aiGatewayAdapter: ModelAdapter = {
   id: 'ai-gateway-provider',
-  buildPlan({ descriptor, packageOptions }) {
+  buildTextPlan({ descriptor, packageOptions }) {
     const upstream = getAiGatewayUpstream(descriptor)
     const normalizedOptions = normalizeAiGatewayAdapterOptions(packageOptions)
     const upstreamFactoryOptions = mergeOptions(
@@ -429,7 +394,7 @@ const aiGatewayAdapter: TextModelAdapter = {
         },
         {
           kind: 'invoke-binding',
-          binding: 'textModel',
+          binding: 'model',
           targetBinding: 'gateway',
           args: [
             {
@@ -439,35 +404,72 @@ const aiGatewayAdapter: TextModelAdapter = {
           ],
         },
       ],
-      resultBinding: 'textModel',
+      resultBinding: 'model',
     }
   },
 }
 
-const ADAPTERS = new Map<string, TextModelAdapter>(
+const ADAPTERS = new Map<string, ModelAdapter>(
   [...CALLABLE_ADAPTERS, aiGatewayAdapter].map((adapter) => [adapter.id, adapter]),
 )
 
-export const SUPPORTED_PACKAGE_NAMES = Object.freeze([...ADAPTERS.keys()].sort())
+export const SUPPORTED_PACKAGE_NAMES_BY_MODE = Object.freeze({
+  text: Object.freeze(
+    [...ADAPTERS.values()]
+      .filter((adapter) => adapter.buildTextPlan)
+      .map((adapter) => adapter.id)
+      .sort(),
+  ),
+  transcription: Object.freeze(
+    [...ADAPTERS.values()]
+      .filter((adapter) => adapter.buildTranscriptionPlan)
+      .map((adapter) => adapter.id)
+      .sort(),
+  ),
+}) satisfies Record<ModelMode, readonly string[]>
 
-export function getTextModelAdapter(packageName: string): TextModelAdapter | undefined {
-  return ADAPTERS.get(packageName)
+export function getSupportedPackageNames(mode: ModelMode): readonly string[] {
+  return SUPPORTED_PACKAGE_NAMES_BY_MODE[mode]
 }
 
-export function buildUnresolvedTextModelLoadPlan(
-  descriptor: TextModelDescriptor,
+export function supportsPackageMode(packageName: string, mode: ModelMode): boolean {
+  return getSupportedPackageNames(mode).includes(packageName)
+}
+
+export function getModelAdapter(mode: ModelMode, packageName: string): ModelAdapter | undefined {
+  const adapter = ADAPTERS.get(packageName)
+
+  if (!adapter) {
+    return undefined
+  }
+
+  return adapter[BUILD_METHOD_BY_MODE[mode]] ? adapter : undefined
+}
+
+export function buildUnresolvedModelLoadPlan(
+  mode: ModelMode,
+  descriptor: ModelDescriptor,
   packageOptions: unknown,
-): UnresolvedTextModelLoadPlan {
-  const adapter = getTextModelAdapter(descriptor.packageName)
+): UnresolvedAdapterLoadPlan {
+  const adapter = getModelAdapter(mode, descriptor.packageName)
 
   if (!adapter) {
     throw new AdapterConfigurationError(
       descriptor.packageName,
-      `No adapter is configured for "${descriptor.packageName}"`,
+      `No ${mode} adapter is configured for "${descriptor.packageName}"`,
     )
   }
 
-  return adapter.buildPlan({
+  const buildPlan = adapter[BUILD_METHOD_BY_MODE[mode]]
+
+  if (!buildPlan) {
+    throw new AdapterConfigurationError(
+      descriptor.packageName,
+      `No ${mode} adapter is configured for "${descriptor.packageName}"`,
+    )
+  }
+
+  return buildPlan({
     descriptor,
     packageOptions,
   })

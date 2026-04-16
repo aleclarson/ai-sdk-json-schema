@@ -1,4 +1,7 @@
-import { textModelConfigJsonSchema } from '../schema'
+import {
+  textModelConfigJsonSchema,
+  transcriptionModelConfigJsonSchema,
+} from '../schema'
 import type { JsonSchemaObject } from '../types'
 
 export interface JsonSchemaFileEntry {
@@ -11,6 +14,10 @@ export function createJsonSchemaFileEntries(): JsonSchemaFileEntry[] {
     {
       path: 'text-model-config.schema.json',
       schema: textModelConfigJsonSchema,
+    },
+    {
+      path: 'transcription-model-config.schema.json',
+      schema: transcriptionModelConfigJsonSchema,
     },
   ]
 }

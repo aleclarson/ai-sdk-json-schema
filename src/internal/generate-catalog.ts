@@ -1,11 +1,15 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
-import { buildUnresolvedTextModelLoadPlan, SUPPORTED_PACKAGE_NAMES } from '../runtime/adapters'
+import { buildUnresolvedModelLoadPlan, supportsPackageMode } from '../runtime/adapters'
+import type { ModelDescriptor, ModelMode } from '../types'
 import type {
-  GeneratedCatalog,
+  GeneratedTextCatalog,
+  GeneratedTranscriptionCatalog,
   GeneratedTextModel,
   GeneratedTextProvider,
+  GeneratedTranscriptionModel,
+  GeneratedTranscriptionProvider,
   ModelShape,
 } from './catalog-types'
 
@@ -15,6 +19,22 @@ export interface GenerateCatalogFromProvidersDirOptions {
   ref: string
   since?: string
   parseToml(source: string): unknown
+}
+
+export interface GeneratedCatalogs {
+  textModelCatalog: GeneratedTextCatalog
+  transcriptionModelCatalog: GeneratedTranscriptionCatalog
+}
+
+export interface CollectListedPackageNamesFromProvidersDirOptions {
+  providersDir: string
+  parseToml(source: string): unknown
+}
+
+export interface GenerateCatalogsFromProvidersDirOptions
+  extends Omit<GenerateCatalogFromProvidersDirOptions, 'since'> {
+  textSince?: string
+  transcriptionSince?: string
 }
 
 interface RawProviderToml {
@@ -135,15 +155,24 @@ function isModelIncludedSince(model: GeneratedTextModel, since: string | undefin
   return comparableLastUpdated !== undefined && comparableLastUpdated >= since
 }
 
-function assertSupportedPackageName(packageName: string, label: string) {
-  if (!SUPPORTED_PACKAGE_NAMES.includes(packageName)) {
-    throw new Error(`${label} uses unsupported package "${packageName}"`)
+function isProviderSupportedForMode(packageName: string, mode: ModelMode): boolean {
+  return supportsPackageMode(packageName, mode)
+}
+
+function assertSupportedPackageName(packageName: string, label: string, mode: ModelMode) {
+  if (!supportsPackageMode(packageName, mode)) {
+    throw new Error(`${label} uses unsupported ${mode} package "${packageName}"`)
   }
 }
 
-function validateModelAdapter(provider: GeneratedTextProvider, model: GeneratedTextModel) {
-  buildUnresolvedTextModelLoadPlan(
-    {
+function createDescriptor(
+  mode: ModelMode,
+  provider: GeneratedTextProvider | GeneratedTranscriptionProvider,
+  model: GeneratedTextModel | GeneratedTranscriptionModel,
+): ModelDescriptor {
+  if (mode === 'transcription') {
+    return {
+      mode,
       provider: provider.id,
       providerName: provider.name,
       providerDoc: provider.doc,
@@ -151,22 +180,44 @@ function validateModelAdapter(provider: GeneratedTextProvider, model: GeneratedT
       catalogMatch: true,
       model: model.id,
       name: model.name,
-      family: model.family,
-      attachment: model.attachment,
-      reasoning: model.reasoning,
-      toolCall: model.toolCall,
-      structuredOutput: model.structuredOutput,
-      temperature: model.temperature,
-      knowledge: model.knowledge,
-      releaseDate: model.releaseDate,
-      lastUpdated: model.lastUpdated,
-      modalities: model.modalities,
       packageName: model.packageName,
       api: model.api,
-      shape: model.shape,
-    },
-    undefined,
-  )
+    }
+  }
+
+  const textModel = model as GeneratedTextModel
+
+  return {
+    mode,
+    provider: provider.id,
+    providerName: provider.name,
+    providerDoc: provider.doc,
+    env: provider.env,
+    catalogMatch: true,
+    model: textModel.id,
+    name: textModel.name,
+    family: textModel.family,
+    attachment: textModel.attachment,
+    reasoning: textModel.reasoning,
+    toolCall: textModel.toolCall,
+    structuredOutput: textModel.structuredOutput,
+    temperature: textModel.temperature,
+    knowledge: textModel.knowledge,
+    releaseDate: textModel.releaseDate,
+    lastUpdated: textModel.lastUpdated,
+    modalities: textModel.modalities,
+    packageName: textModel.packageName,
+    api: textModel.api,
+    shape: textModel.shape,
+  }
+}
+
+function validateModelAdapter(
+  mode: ModelMode,
+  provider: GeneratedTextProvider | GeneratedTranscriptionProvider,
+  model: GeneratedTextModel | GeneratedTranscriptionModel,
+) {
+  buildUnresolvedModelLoadPlan(mode, createDescriptor(mode, provider, model), undefined)
 }
 
 function listProviderDirectories(providersDir: string): string[] {
@@ -210,7 +261,6 @@ function normalizeModelId(relativePath: string): string {
 
 function createModel(
   providerId: string,
-  provider: GeneratedTextProvider,
   modelId: string,
   rawModel: RawModelToml,
   defaultPackageName: string,
@@ -233,7 +283,7 @@ function createModel(
   const api = getOptionalString(rawModel.provider?.api) ?? defaultApi
   const shape = getOptionalShape(rawModel.provider?.shape)
 
-  const model: GeneratedTextModel = {
+  return {
     id: modelId,
     name: assertString(rawModel.name, `${providerId}/${modelId}.name`),
     family: getOptionalString(rawModel.family),
@@ -253,16 +303,79 @@ function createModel(
     api,
     shape,
   }
+}
 
-  return model
+function isModelIncludedForMode(mode: ModelMode, model: GeneratedTextModel): boolean {
+  if (mode === 'text') {
+    return true
+  }
+
+  return model.modalities.input.includes('audio') && model.modalities.output.includes('text')
+}
+
+function createTranscriptionModel(model: GeneratedTextModel): GeneratedTranscriptionModel {
+  return {
+    id: model.id,
+    name: model.name,
+    packageName: model.packageName,
+    api: model.api,
+  }
+}
+
+export function collectListedPackageNamesFromProvidersDir(
+  options: CollectListedPackageNamesFromProvidersDirOptions,
+): string[] {
+  const packageNames = new Set<string>()
+
+  for (const providerId of listProviderDirectories(options.providersDir)) {
+    const providerDir = path.join(options.providersDir, providerId)
+    const providerTomlPath = path.join(providerDir, 'provider.toml')
+    const modelsDir = path.join(providerDir, 'models')
+
+    if (!fs.existsSync(providerTomlPath) || !fs.existsSync(modelsDir)) {
+      continue
+    }
+
+    const rawProvider = options.parseToml(
+      fs.readFileSync(providerTomlPath, 'utf8'),
+    ) as RawProviderToml
+    packageNames.add(assertString(rawProvider.npm, `${providerId}.provider.npm`))
+
+    for (const relativePath of listModelTomlFiles(modelsDir)) {
+      const rawModel = options.parseToml(
+        fs.readFileSync(path.join(modelsDir, relativePath), 'utf8'),
+      ) as RawModelToml
+      const overridePackageName = getOptionalString(rawModel.provider?.npm)
+
+      if (overridePackageName) {
+        packageNames.add(overridePackageName)
+      }
+    }
+  }
+
+  return [...packageNames].sort()
 }
 
 export function createGeneratedCatalogFromProvidersDir(
   options: GenerateCatalogFromProvidersDirOptions,
-): GeneratedCatalog {
+): GeneratedTextCatalog
+export function createGeneratedCatalogFromProvidersDir(
+  options: GenerateCatalogFromProvidersDirOptions,
+  mode: 'text',
+): GeneratedTextCatalog
+export function createGeneratedCatalogFromProvidersDir(
+  options: GenerateCatalogFromProvidersDirOptions,
+  mode: 'transcription',
+): GeneratedTranscriptionCatalog
+export function createGeneratedCatalogFromProvidersDir(
+  options: GenerateCatalogFromProvidersDirOptions,
+  mode: ModelMode = 'text',
+): GeneratedTextCatalog | GeneratedTranscriptionCatalog {
   const since = options.since ? assertSinceDateString(options.since, 'since') : undefined
   const packageNames = new Set<string>()
-  const providers: Record<string, GeneratedTextProvider> = {}
+  const providers:
+    | Record<string, GeneratedTextProvider>
+    | Record<string, GeneratedTranscriptionProvider> = {}
 
   for (const providerId of listProviderDirectories(options.providersDir)) {
     const providerDir = path.join(options.providersDir, providerId)
@@ -278,18 +391,40 @@ export function createGeneratedCatalogFromProvidersDir(
     ) as RawProviderToml
     const defaultPackageName = assertString(rawProvider.npm, `${providerId}.provider.npm`)
 
-    assertSupportedPackageName(defaultPackageName, `Provider "${providerId}"`)
+    if (!isProviderSupportedForMode(defaultPackageName, mode)) {
+      if (mode === 'text') {
+        assertSupportedPackageName(defaultPackageName, `Provider "${providerId}"`, mode)
+      }
 
-    const provider: GeneratedTextProvider = {
-      id: providerId,
-      name: assertString(rawProvider.name, `${providerId}.provider.name`),
-      doc: assertString(rawProvider.doc, `${providerId}.provider.doc`),
-      env: assertStringArray(rawProvider.env, `${providerId}.provider.env`),
-      packageName: defaultPackageName,
-      api: getOptionalString(rawProvider.api),
-      shape: getOptionalShape(rawProvider.shape),
-      models: {},
+      continue
     }
+
+    const providerName = assertString(rawProvider.name, `${providerId}.provider.name`)
+    const providerDoc = assertString(rawProvider.doc, `${providerId}.provider.doc`)
+    const providerEnv = assertStringArray(rawProvider.env, `${providerId}.provider.env`)
+    const providerApi = getOptionalString(rawProvider.api)
+    const providerShape = getOptionalShape(rawProvider.shape)
+    const provider =
+      mode === 'text'
+        ? ({
+            id: providerId,
+            name: providerName,
+            doc: providerDoc,
+            env: providerEnv,
+            packageName: defaultPackageName,
+            api: providerApi,
+            shape: providerShape,
+            models: {},
+          } satisfies GeneratedTextProvider)
+        : ({
+            id: providerId,
+            name: providerName,
+            doc: providerDoc,
+            env: providerEnv,
+            packageName: defaultPackageName,
+            api: providerApi,
+            models: {},
+          } satisfies GeneratedTranscriptionProvider)
     const defaultApi = provider.api
 
     packageNames.add(provider.packageName)
@@ -300,27 +435,33 @@ export function createGeneratedCatalogFromProvidersDir(
         fs.readFileSync(path.join(modelsDir, relativePath), 'utf8'),
       ) as RawModelToml
 
-      const model = createModel(
-        providerId,
-        provider,
-        modelId,
-        rawModel,
-        defaultPackageName,
-        defaultApi,
-      )
+      const model = createModel(providerId, modelId, rawModel, defaultPackageName, defaultApi)
 
       if (!model) {
         continue
       }
 
-      if (!isModelIncludedSince(model, since)) {
+      if (!isModelIncludedForMode(mode, model) || !isModelIncludedSince(model, since)) {
         continue
       }
 
-      assertSupportedPackageName(model.packageName, `Model "${providerId}/${modelId}"`)
-      validateModelAdapter(provider, model)
+      if (!supportsPackageMode(model.packageName, mode)) {
+        if (mode === 'text') {
+          assertSupportedPackageName(model.packageName, `Model "${providerId}/${modelId}"`, mode)
+        }
 
-      provider.models[modelId] = model
+        continue
+      }
+
+      if (mode === 'text') {
+        validateModelAdapter(mode, provider, model)
+        ;(provider as GeneratedTextProvider).models[modelId] = model
+      } else {
+        const transcriptionModel = createTranscriptionModel(model)
+        validateModelAdapter(mode, provider, transcriptionModel)
+        ;(provider as GeneratedTranscriptionProvider).models[modelId] = transcriptionModel
+      }
+
       packageNames.add(model.packageName)
     }
 
@@ -340,19 +481,61 @@ export function createGeneratedCatalogFromProvidersDir(
   }
 }
 
+export function createGeneratedCatalogsFromProvidersDir(
+  options: GenerateCatalogsFromProvidersDirOptions,
+): GeneratedCatalogs {
+  return {
+    textModelCatalog: createGeneratedCatalogFromProvidersDir(
+      {
+        ...options,
+        since: options.textSince,
+      },
+      'text',
+    ),
+    transcriptionModelCatalog: createGeneratedCatalogFromProvidersDir(
+      {
+        ...options,
+        since: options.transcriptionSince,
+      },
+      'transcription',
+    ),
+  }
+}
+
 export function renderCatalogModule(
-  catalog: GeneratedCatalog,
-  options: { since?: string } = {},
+  catalog: GeneratedTextCatalog | GeneratedTranscriptionCatalog,
+  options: { exportName: string; typeName: string; filterComment?: string },
 ): string {
+  const description =
+    options.exportName === 'textModelCatalog'
+      ? [
+          '/**',
+          ' * Generated text-model catalog derived from `anomalyco/models.dev`.',
+          ' *',
+          ' * The catalog is committed to the repository and contains only models whose',
+          ' * declared output modalities include `text`.',
+          ' */',
+        ]
+      : [
+          '/**',
+          ' * Generated transcription-model catalog derived from `anomalyco/models.dev`.',
+          ' *',
+          ' * The catalog is committed to the repository and contains only models whose',
+          ' * declared input modalities include `audio`, whose output modalities include',
+          ' * `text`, and whose package has a configured transcription adapter.',
+          ' */',
+        ]
+
   return [
     '// GENERATED FILE. DO NOT EDIT.',
     '// Generated by: scripts/generate.ts',
     '// Regenerate with: pnpm generate',
-    ...(options.since ? [`// Filtered with: --since ${options.since}`, ''] : []),
+    ...(options.filterComment ? [`// Filtered with: ${options.filterComment}`, ''] : []),
     '',
-    "import type { GeneratedCatalog } from '../internal/catalog-types'",
+    `import type { ${options.typeName} } from '../internal/catalog-types'`,
     '',
-    'export const generatedCatalog: GeneratedCatalog = ' + JSON.stringify(catalog, null, 2),
+    ...description,
+    `export const ${options.exportName}: ${options.typeName} = ` + JSON.stringify(catalog, null, 2),
     '',
   ].join('\n')
 }

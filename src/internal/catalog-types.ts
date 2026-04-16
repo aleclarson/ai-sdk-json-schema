@@ -1,8 +1,13 @@
 export type ModelShape = 'completions' | 'responses'
 
-export interface GeneratedTextModel {
+export interface GeneratedModelBase {
   id: string
   name: string
+  packageName: string
+  api?: string
+}
+
+export interface GeneratedTextModel extends GeneratedModelBase {
   family?: string
   attachment: boolean
   reasoning: boolean
@@ -16,21 +21,28 @@ export interface GeneratedTextModel {
     input: readonly string[]
     output: readonly string[]
   }
-  packageName: string
-  api?: string
   shape?: ModelShape
 }
 
-export interface GeneratedTextProvider {
+export interface GeneratedTranscriptionModel extends GeneratedModelBase {}
+
+export interface GeneratedCatalogProviderBase<MODEL> {
   id: string
   name: string
   doc: string
   env: readonly string[]
   packageName: string
   api?: string
-  shape?: ModelShape
-  models: Record<string, GeneratedTextModel>
+  models: Record<string, MODEL>
 }
+
+export interface GeneratedTextProvider
+  extends GeneratedCatalogProviderBase<GeneratedTextModel> {
+  shape?: ModelShape
+}
+
+export interface GeneratedTranscriptionProvider
+  extends GeneratedCatalogProviderBase<GeneratedTranscriptionModel> {}
 
 export interface GeneratedCatalogSource {
   repo: string
@@ -38,8 +50,11 @@ export interface GeneratedCatalogSource {
   generatedAt: string
 }
 
-export interface GeneratedCatalog {
+export interface GeneratedCatalog<PROVIDER> {
   source: GeneratedCatalogSource
   packageNames: readonly string[]
-  providers: Record<string, GeneratedTextProvider>
+  providers: Record<string, PROVIDER>
 }
+
+export type GeneratedTextCatalog = GeneratedCatalog<GeneratedTextProvider>
+export type GeneratedTranscriptionCatalog = GeneratedCatalog<GeneratedTranscriptionProvider>

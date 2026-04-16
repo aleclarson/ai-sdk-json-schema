@@ -1,10 +1,11 @@
 import { z } from 'zod'
 
-import { generatedCatalog } from './generated/catalog'
-import type { GeneratedTextProvider } from './internal/catalog-types'
-import type { JsonSchemaObject, TextModelConfig } from './types'
+import { textModelCatalog } from './generated/text-model-catalog'
+import { transcriptionModelCatalog } from './generated/transcription-model-catalog'
+import type { GeneratedCatalog, GeneratedCatalogProviderBase } from './internal/catalog-types'
+import type { JsonSchemaObject, ModelConfig } from './types'
 
-function createModelSchema(provider: GeneratedTextProvider) {
+function createModelSchema(provider: GeneratedCatalogProviderBase<unknown>) {
   const modelIds = Object.keys(provider.models)
 
   return z.string().meta({
@@ -24,7 +25,7 @@ function unionSchemas(schemas: z.ZodTypeAny[]): z.ZodTypeAny {
   return z.union(schemas as [z.ZodTypeAny, z.ZodTypeAny, ...z.ZodTypeAny[]])
 }
 
-function createProviderSchema(provider: GeneratedTextProvider) {
+function createProviderSchema(provider: GeneratedCatalogProviderBase<unknown>) {
   return z
     .object({
       provider: z.literal(provider.id),
@@ -36,45 +37,72 @@ function createProviderSchema(provider: GeneratedTextProvider) {
     })
 }
 
-const providerSchemas = Object.fromEntries(
-  Object.values(generatedCatalog.providers).map((provider) => [
-    provider.id,
-    createProviderSchema(provider),
-  ]),
-)
+function createSchemaBundle(catalog: GeneratedCatalog<GeneratedCatalogProviderBase<unknown>>) {
+  const providerSchemas = Object.fromEntries(
+    Object.values(catalog.providers).map((provider) => [provider.id, createProviderSchema(provider)]),
+  ) as Record<string, z.ZodType<ModelConfig>>
 
-const providerSchemaValues = Object.values(providerSchemas)
-const rootSchema = unionSchemas(providerSchemaValues)
+  const rootSchema = unionSchemas(Object.values(providerSchemas)) as z.ZodType<ModelConfig>
+  const providerJsonSchemas = Object.fromEntries(
+    Object.entries(providerSchemas).map(([providerId, schema]) => [
+      providerId,
+      z.toJSONSchema(schema, {
+        target: 'draft-2020-12',
+      }) as JsonSchemaObject,
+    ]),
+  ) as Record<string, JsonSchemaObject>
 
-/**
- * Provider-scoped Zod schemas for validating `{ provider, model }` pairs.
- */
-export const textModelConfigSchemasByProvider = providerSchemas as Record<
-  string,
-  z.ZodType<TextModelConfig>
->
-
-/**
- * Top-level Zod schema for validating the narrow JSON config surface exposed by
- * this library.
- */
-export const textModelConfigSchema = rootSchema as z.ZodType<TextModelConfig>
-
-/**
- * Provider-scoped JSON Schemas generated from the corresponding Zod schemas.
- */
-export const textModelConfigJsonSchemasByProvider = Object.fromEntries(
-  Object.entries(textModelConfigSchemasByProvider).map(([providerId, schema]) => [
-    providerId,
-    z.toJSONSchema(schema, {
+  return {
+    configSchemasByProvider: providerSchemas,
+    configSchema: rootSchema,
+    configJsonSchemasByProvider: providerJsonSchemas,
+    configJsonSchema: z.toJSONSchema(rootSchema, {
       target: 'draft-2020-12',
     }) as JsonSchemaObject,
-  ]),
-) as Record<string, JsonSchemaObject>
+  }
+}
+
+const textSchemaBundle = createSchemaBundle(textModelCatalog)
+const transcriptionSchemaBundle = createSchemaBundle(transcriptionModelCatalog)
+
+/**
+ * Provider-scoped Zod schemas for validating text `{ provider, model }` pairs.
+ */
+export const textModelConfigSchemasByProvider = textSchemaBundle.configSchemasByProvider
+
+/**
+ * Top-level Zod schema for validating text model config.
+ */
+export const textModelConfigSchema = textSchemaBundle.configSchema
+
+/**
+ * Provider-scoped JSON Schemas generated from the text Zod schemas.
+ */
+export const textModelConfigJsonSchemasByProvider = textSchemaBundle.configJsonSchemasByProvider
 
 /**
  * Top-level JSON Schema generated from {@link textModelConfigSchema}.
  */
-export const textModelConfigJsonSchema = z.toJSONSchema(textModelConfigSchema, {
-  target: 'draft-2020-12',
-}) as JsonSchemaObject
+export const textModelConfigJsonSchema = textSchemaBundle.configJsonSchema
+
+/**
+ * Provider-scoped Zod schemas for validating transcription `{ provider, model }` pairs.
+ */
+export const transcriptionModelConfigSchemasByProvider =
+  transcriptionSchemaBundle.configSchemasByProvider
+
+/**
+ * Top-level Zod schema for validating transcription model config.
+ */
+export const transcriptionModelConfigSchema = transcriptionSchemaBundle.configSchema
+
+/**
+ * Provider-scoped JSON Schemas generated from the transcription Zod schemas.
+ */
+export const transcriptionModelConfigJsonSchemasByProvider =
+  transcriptionSchemaBundle.configJsonSchemasByProvider
+
+/**
+ * Top-level JSON Schema generated from {@link transcriptionModelConfigSchema}.
+ */
+export const transcriptionModelConfigJsonSchema = transcriptionSchemaBundle.configJsonSchema

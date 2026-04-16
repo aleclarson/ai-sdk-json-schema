@@ -4,9 +4,8 @@ export class AdapterConfigurationError extends Error {
   adapterId
   constructor(_, _) {}
 }
-export function buildTextModelLoadPlan(_, _) {}
-export async function executeTextModelLoadPlan(_, _) {}
-export var generatedCatalog /* const */
+export function buildModelLoadPlan(_, _, _) {}
+export async function executeModelLoadPlan(_, _) {}
 export class InvalidProviderModuleError extends Error {
   specifier
   resolvedPath
@@ -14,6 +13,7 @@ export class InvalidProviderModuleError extends Error {
   constructor(_) {}
 }
 export async function loadTextModel(_, _) {}
+export async function loadTranscriptionModel(_, _) {}
 export class MissingProviderPackageError extends Error {
   packageName
   specifier
@@ -25,12 +25,18 @@ export class MissingTemplateVariableError extends Error {
   template
   constructor(_, _) {}
 }
-export function resolveTextModel(_) {}
-export function resolveTextModelModules(_, _) {}
+export function resolveModel(_, _) {}
+export function resolveModelModules(_, _) {}
+export var textModelCatalog /* const */
 export var textModelConfigJsonSchema /* const */
 export var textModelConfigJsonSchemasByProvider /* const */
 export var textModelConfigSchema /* const */
 export var textModelConfigSchemasByProvider /* const */
+export var transcriptionModelCatalog /* const */
+export var transcriptionModelConfigJsonSchema /* const */
+export var transcriptionModelConfigJsonSchemasByProvider /* const */
+export var transcriptionModelConfigSchema /* const */
+export var transcriptionModelConfigSchemasByProvider /* const */
 export class UnknownModelError extends Error {
   provider
   model

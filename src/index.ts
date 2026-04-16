@@ -1,4 +1,5 @@
-export { generatedCatalog } from './catalog'
+export { textModelCatalog } from './generated/text-model-catalog'
+export { transcriptionModelCatalog } from './generated/transcription-model-catalog'
 export {
   AdapterConfigurationError,
   InvalidProviderModuleError,
@@ -8,33 +9,40 @@ export {
   UnknownProviderError,
 } from './errors'
 export {
-  buildTextModelLoadPlan,
-  executeTextModelLoadPlan,
+  buildModelLoadPlan,
+  executeModelLoadPlan,
   loadTextModel,
-  resolveTextModel,
-  resolveTextModelModules,
+  loadTranscriptionModel,
+  resolveModel,
+  resolveModelModules,
 } from './resolve'
 export {
   textModelConfigJsonSchema,
   textModelConfigJsonSchemasByProvider,
   textModelConfigSchema,
   textModelConfigSchemasByProvider,
+  transcriptionModelConfigJsonSchema,
+  transcriptionModelConfigJsonSchemasByProvider,
+  transcriptionModelConfigSchema,
+  transcriptionModelConfigSchemasByProvider,
 } from './schema'
 export type {
-  BuildTextModelLoadPlanOptions,
-  ExecuteResolvedTextModelLoadPlanOptions,
-  ExecuteUnresolvedTextModelLoadPlanOptions,
+  BuildModelLoadPlanOptions,
+  ExecuteResolvedModelLoadPlanOptions,
+  ExecuteUnresolvedModelLoadPlanOptions,
   JsonSchemaObject,
-  LoadTextModelOptions,
-  ResolvedTextModelLoadPlan,
-  ResolvedTextModelModule,
-  ResolveTextModelModulesOptions,
-  TextModelConfig,
-  TextModelCreateBindingOperation,
-  TextModelDescriptor,
-  TextModelInvokeBindingOperation,
-  TextModelLoadArgument,
-  TextModelLoadOperation,
-  TextModelModulePlan,
-  UnresolvedTextModelLoadPlan,
+  LoadModelOptions,
+  ModelBindingArgument,
+  ModelConfig,
+  ModelCreateBindingOperation,
+  ModelDescriptor,
+  ModelInvokeBindingOperation,
+  ModelLoadArgument,
+  ModelLoadOperation,
+  ModelMode,
+  ModelModulePlan,
+  ResolvedModelLoadPlan,
+  ResolvedModelModule,
+  ResolveModelModulesOptions,
+  UnresolvedModelLoadPlan,
 } from './types'

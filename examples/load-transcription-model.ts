@@ -1,12 +1,13 @@
-import { loadTextModel, resolveModel, textModelCatalog } from 'ai-sdk-json-schema'
+import {
+  loadTranscriptionModel,
+  resolveModel,
+  transcriptionModelCatalog,
+} from 'ai-sdk-json-schema'
 
 function findConfigByPackage(packageName: string) {
-  for (const [providerId, provider] of Object.entries(textModelCatalog.providers)) {
+  for (const [providerId, provider] of Object.entries(transcriptionModelCatalog.providers)) {
     for (const [modelId, model] of Object.entries(provider.models)) {
-      const isTextOnlyModel =
-        model.modalities.output.length === 1 && model.modalities.output[0] === 'text'
-
-      if (model.packageName === packageName && isTextOnlyModel) {
+      if (model.packageName === packageName) {
         return {
           provider: providerId,
           model: modelId,
@@ -19,8 +20,8 @@ function findConfigByPackage(packageName: string) {
 }
 
 const config = findConfigByPackage('@ai-sdk/openai')
-const descriptor = resolveModel('text', config)
-const model = await loadTextModel(config, {
+const descriptor = resolveModel('transcription', config)
+const model = await loadTranscriptionModel(config, {
   installationRoot: process.cwd(),
 })
 
