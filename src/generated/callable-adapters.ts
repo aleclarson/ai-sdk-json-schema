@@ -12,11 +12,6 @@
  */
 export const generatedCallableAdapterConfigs = [
   {
-    "id": "@ai-sdk/alibaba",
-    "createExportName": "createAlibaba",
-    "supportsTranscription": false
-  },
-  {
     "id": "@ai-sdk/amazon-bedrock",
     "createExportName": "createAmazonBedrock",
     "supportsTranscription": false
