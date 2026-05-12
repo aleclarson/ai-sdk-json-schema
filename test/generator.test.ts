@@ -4,9 +4,11 @@ import os from 'node:os'
 import path from 'node:path'
 
 import {
+  collectListedPackageNamesFromProvidersDir,
   createGeneratedCatalogFromProvidersDir,
   createGeneratedCatalogsFromProvidersDir,
 } from '../src/internal/generate-catalog'
+import { createRawModelResolver } from '../src/internal/raw-model-toml'
 
 async function withTempProvidersDir(
   files: Record<string, string>,
@@ -33,6 +35,148 @@ async function withTempProvidersDir(
 }
 
 describe('createGeneratedCatalogFromProvidersDir', () => {
+  test('applies extends omit and strips only the top-level extends table', async () => {
+    await withTempProvidersDir(
+      {
+        'base/provider.toml': [
+          'name = "Base"',
+          'npm = "@ai-sdk/openai-compatible"',
+          'env = ["BASE_API_KEY"]',
+          'doc = "https://base.example/docs"',
+        ].join('\n'),
+        'base/models/base.toml': [
+          'name = "Base Model"',
+          'attachment = false',
+          'reasoning = false',
+          'tool_call = true',
+          'temperature = true',
+          'release_date = "2026-01-01"',
+          'last_updated = "2026-01-02"',
+          '',
+          '[modalities]',
+          'input = ["text"]',
+          'output = ["text"]',
+          '',
+          '[experimental.modes]',
+          'fast = true',
+          '',
+          '[provider]',
+          'extends = "nested-key"',
+        ].join('\n'),
+        'child/provider.toml': [
+          'name = "Child"',
+          'npm = "@ai-sdk/openai-compatible"',
+          'env = ["CHILD_API_KEY"]',
+          'doc = "https://child.example/docs"',
+        ].join('\n'),
+        'child/models/child.toml': [
+          '[extends]',
+          'from = "base/base"',
+          'omit = ["experimental.modes.fast"]',
+        ].join('\n'),
+      },
+      (providersDir) => {
+        const rawModel = createRawModelResolver({
+          providersDir,
+          parseToml(source) {
+            return Bun.TOML.parse(source)
+          },
+        }).resolve('child', 'child')
+
+        expect(rawModel.extends).toBeUndefined()
+        expect(rawModel.provider as Record<string, unknown> | undefined).toEqual({
+          extends: 'nested-key',
+        })
+        expect(rawModel.experimental).toBeUndefined()
+      },
+    )
+  })
+
+  test('resolves model extends references before catalog generation', async () => {
+    await withTempProvidersDir(
+      {
+        'deepseek/provider.toml': [
+          'name = "DeepSeek"',
+          'npm = "@ai-sdk/openai-compatible"',
+          'env = ["DEEPSEEK_API_KEY"]',
+          'doc = "https://deepseek.example/docs"',
+          'api = "https://deepseek.example/v1"',
+        ].join('\n'),
+        'deepseek/models/deepseek-v4-flash.toml': [
+          'name = "DeepSeek V4 Flash"',
+          'family = "deepseek-v4"',
+          'attachment = false',
+          'reasoning = true',
+          'tool_call = true',
+          'structured_output = true',
+          'temperature = true',
+          'knowledge = "2026-01"',
+          'release_date = "2026-01-01"',
+          'last_updated = "2026-01-02"',
+          '',
+          '[modalities]',
+          'input = ["text"]',
+          'output = ["text"]',
+        ].join('\n'),
+        'alibaba-cn/provider.toml': [
+          'name = "Alibaba CN"',
+          'npm = "@ai-sdk/openai-compatible"',
+          'env = ["ALIBABA_CN_API_KEY"]',
+          'doc = "https://alibaba.example/docs"',
+          'api = "https://dashscope.aliyuncs.com/compatible-mode/v1"',
+        ].join('\n'),
+        'alibaba-cn/models/deepseek-v4-flash.toml': [
+          'last_updated = "2026-02-03"',
+          '',
+          '[extends]',
+          'from = "deepseek/deepseek-v4-flash"',
+          '',
+          '[provider]',
+          'api = "https://dashscope.aliyuncs.com/compatible-mode/v1/deepseek"',
+        ].join('\n'),
+      },
+      (providersDir) => {
+        const catalog = createGeneratedCatalogFromProvidersDir({
+          providersDir,
+          generatedAt: '2026-01-01T00:00:00.000Z',
+          ref: 'fixture',
+          parseToml(source) {
+            return Bun.TOML.parse(source)
+          },
+        })
+
+        expect(catalog.providers['alibaba-cn']?.models['deepseek-v4-flash']).toEqual({
+          id: 'deepseek-v4-flash',
+          name: 'DeepSeek V4 Flash',
+          family: 'deepseek-v4',
+          attachment: false,
+          reasoning: true,
+          toolCall: true,
+          structuredOutput: true,
+          temperature: true,
+          knowledge: '2026-01',
+          releaseDate: '2026-01-01',
+          lastUpdated: '2026-02-03',
+          modalities: {
+            input: ['text'],
+            output: ['text'],
+          },
+          packageName: '@ai-sdk/openai-compatible',
+          api: 'https://dashscope.aliyuncs.com/compatible-mode/v1/deepseek',
+          shape: undefined,
+        })
+        expect(
+          collectListedPackageNamesFromProvidersDir({
+            providersDir,
+            parseToml(source) {
+              return Bun.TOML.parse(source)
+            },
+          }),
+        ).toEqual(['@ai-sdk/openai-compatible'])
+      },
+    )
+  })
+
   test('keeps nested model ids, provider overrides, and third-party packages for text mode', async () => {
     await withTempProvidersDir(
       {

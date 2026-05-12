@@ -16,6 +16,7 @@ import type {
   GeneratedTranscriptionProvider,
   ModelShape,
 } from './catalog-types'
+import { createRawModelResolver, type RawModelToml } from './raw-model-toml'
 
 export interface GenerateCatalogFromProvidersDirOptions {
   providersDir: string
@@ -48,30 +49,6 @@ interface RawProviderToml {
   npm?: unknown
   api?: unknown
   shape?: unknown
-}
-
-interface RawModelProviderOverride {
-  npm?: unknown
-  api?: unknown
-  shape?: unknown
-}
-
-interface RawModelToml {
-  name?: unknown
-  family?: unknown
-  attachment?: unknown
-  reasoning?: unknown
-  tool_call?: unknown
-  structured_output?: unknown
-  temperature?: unknown
-  knowledge?: unknown
-  release_date?: unknown
-  last_updated?: unknown
-  modalities?: {
-    input?: unknown
-    output?: unknown
-  }
-  provider?: RawModelProviderOverride
 }
 
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
@@ -329,6 +306,7 @@ export function collectListedPackageNamesFromProvidersDir(
   options: CollectListedPackageNamesFromProvidersDirOptions,
 ): string[] {
   const packageNames = new Set<string>()
+  const rawModelResolver = createRawModelResolver(options)
 
   for (const providerId of listProviderDirectories(options.providersDir)) {
     const providerDir = path.join(options.providersDir, providerId)
@@ -345,9 +323,7 @@ export function collectListedPackageNamesFromProvidersDir(
     packageNames.add(assertString(rawProvider.npm, `${providerId}.provider.npm`))
 
     for (const relativePath of listModelTomlFiles(modelsDir)) {
-      const rawModel = options.parseToml(
-        fs.readFileSync(path.join(modelsDir, relativePath), 'utf8'),
-      ) as RawModelToml
+      const rawModel = rawModelResolver.resolve(providerId, normalizeModelId(relativePath))
       const overridePackageName = getOptionalString(rawModel.provider?.npm)
 
       if (overridePackageName) {
@@ -379,6 +355,7 @@ export function createGeneratedCatalogFromProvidersDir(
   const providers:
     | Record<string, GeneratedTextProvider>
     | Record<string, GeneratedTranscriptionProvider> = {}
+  const rawModelResolver = createRawModelResolver(options)
 
   for (const providerId of listProviderDirectories(options.providersDir)) {
     const providerDir = path.join(options.providersDir, providerId)
@@ -430,9 +407,7 @@ export function createGeneratedCatalogFromProvidersDir(
 
     for (const relativePath of listModelTomlFiles(modelsDir)) {
       const modelId = normalizeModelId(relativePath)
-      const rawModel = options.parseToml(
-        fs.readFileSync(path.join(modelsDir, relativePath), 'utf8'),
-      ) as RawModelToml
+      const rawModel = rawModelResolver.resolve(providerId, modelId)
 
       const model = createModel(providerId, modelId, rawModel, defaultPackageName, defaultApi)
 
