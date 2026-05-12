@@ -30,8 +30,8 @@
     "test": "bun test",
     "prepare": "pnpm build"
   },
-  "dependencies": {
-    "zod": "^4.3.6"
+  "peerDependencies": {
+    "zod": ">=4.0.0"
   },
   "devDependencies": {
     "@ai-sdk/openai": "^3.0.52",
